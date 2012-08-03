@@ -5,15 +5,27 @@
 
 Gem::Specification.new do |s|
   s.name = "helpscout"
-  s.version = "0.0.0"
+  s.version = "0.0.0.alpha"
 
-  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
+  s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
   s.authors = ["H\u{e9}ctor Ramos"]
-  s.date = "2012-08-01"
+  s.date = "2012-08-03"
   s.description = ""
-  s.email = "hector@parse.com"
+  s.email = "hector@hectorramos.com"
   s.extra_rdoc_files = [
     "README.markdown"
+  ]
+  s.files = [
+    "Gemfile",
+    "Gemfile.lock",
+    "README.markdown",
+    "Rakefile",
+    "VERSION",
+    "helpscout-0.0.0.gem",
+    "helpscout.gemspec",
+    "lib/helpscout.rb",
+    "lib/helpscout/base.rb",
+    "lib/helpscout/models.rb"
   ]
   s.homepage = "http://github.com/hramos/helpscout"
   s.licenses = ["MIT"]
@@ -29,17 +41,26 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<bundler>, ["~> 1.1.3"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.8.4"])
       s.add_development_dependency(%q<httparty>, [">= 0"])
+      s.add_development_dependency(%q<simplecov>, [">= 0"])
+      s.add_development_dependency(%q<reek>, ["~> 1.2.8"])
+      s.add_development_dependency(%q<rdoc>, [">= 0"])
     else
       s.add_dependency(%q<httparty>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.1.3"])
       s.add_dependency(%q<jeweler>, ["~> 1.8.4"])
       s.add_dependency(%q<httparty>, [">= 0"])
+      s.add_dependency(%q<simplecov>, [">= 0"])
+      s.add_dependency(%q<reek>, ["~> 1.2.8"])
+      s.add_dependency(%q<rdoc>, [">= 0"])
     end
   else
     s.add_dependency(%q<httparty>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.1.3"])
     s.add_dependency(%q<jeweler>, ["~> 1.8.4"])
     s.add_dependency(%q<httparty>, [">= 0"])
+    s.add_dependency(%q<simplecov>, [">= 0"])
+    s.add_dependency(%q<reek>, ["~> 1.2.8"])
+    s.add_dependency(%q<rdoc>, [">= 0"])
   end
 end
 
