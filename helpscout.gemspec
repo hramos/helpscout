@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "helpscout"
-  s.version = "0.0.0.alpha"
+  s.version = "0.0.5.alpha"
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
   s.authors = ["H\u{e9}ctor Ramos"]
-  s.date = "2012-08-03"
+  s.date = "2012-08-10"
   s.description = ""
   s.email = "hector@hectorramos.com"
   s.extra_rdoc_files = [
@@ -17,11 +17,9 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     "Gemfile",
-    "Gemfile.lock",
     "README.markdown",
     "Rakefile",
     "VERSION",
-    "helpscout-0.0.0.gem",
     "helpscout.gemspec",
     "lib/helpscout.rb",
     "lib/helpscout/base.rb",

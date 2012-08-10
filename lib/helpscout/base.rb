@@ -15,7 +15,7 @@ module HelpScout
         key = @@settings["api_key"]
       end
 
-      @auth = { :username => key, :password => "" }
+      @auth = { :username => key, :password => "X" }
       @users = []
       @mailboxes = []
     end
@@ -23,7 +23,7 @@ module HelpScout
     @@settings ||= nil
 
     def self.load!(api_key)
-      @auth = { :username => api_key, :password => "" }
+      @auth = { :username => api_key, :password => "X" }
       @users = []
       @mailboxes = []
       @@settings = {"api_key" => api_key}
@@ -34,14 +34,18 @@ module HelpScout
         path = "config/helpscout.yml"
         environment = ENV["RACK_ENV"]
         @@settings = YAML.load(ERB.new(File.new(path).read).result)[environment]
+        @auth = { :username => @@settings["api_key"], :password => "X" }
       end
       @@settings
     end
 
     def self.parametrizedUrl(url, params={})
+      return url unless params
+
       complete_url = url
 
       parameterString = ""
+
       params.each do |k,v|
         if parameterString.length > 0
           parameterString << "&"
@@ -69,8 +73,12 @@ module HelpScout
           item = envelope.item
         end
       elsif 400 <= response.code && response.code < 500
-        envelope = ErrorEnvelope.new(response)
-        raise StandardError, envelope.message
+        if response["message"]
+          envelope = ErrorEnvelope.new(response)
+          raise StandardError, envelope.message
+        else
+          raise StandardError, response["error"]
+        end
       else
         raise StandardError, "Server Response: #{response.code}"
       end
@@ -97,8 +105,12 @@ module HelpScout
           items << Base.requestItems(url, params)
         end
       elsif 400 <= response.code && response.code < 500
-        envelope = ErrorEnvelope.new(response)
-        raise StandardError, envelope.message
+        if response["message"]
+          envelope = ErrorEnvelope.new(response)
+          raise StandardError, envelope.message
+        else
+          raise StandardError, response["error"]
+        end
       else
         raise StandardError, "Server Response: #{response.code}"
       end
@@ -138,10 +150,14 @@ module HelpScout
 
     def self.mailboxes
       url = "/mailboxes.json"
-      items = Base.requestItems(url, :page => 1)
       @mailboxes = []
-      items.each do |item|
-        @mailboxes << Mailbox.new(item)
+      begin
+        items = Base.requestItems(url, {})
+        items.each do |item|
+          @mailboxes << Mailbox.new(item)
+        end
+      rescue StandardError => e
+        print "Request failed: " + e.message
       end
       @mailboxes
     end
@@ -166,16 +182,23 @@ module HelpScout
       conversation
     end
 
+
+    CONVERSATION_STATUS_ACTIVE = "active"
+    CONVERSATION_STATUS_ALL = "all"
+    CONVERSATION_STATUS_PENDING = "pending"
+
     # :status String
     # :modifiedSince Datetime
     def self.conversations(mailboxId, options={})
-      options.merge!({:page => 1})
-
       url = "/mailboxes/#{mailboxId}/conversations.json"
-      items = Base.requestItems(url, options)
       conversations = []
-      items.each do |item|
-        conversations << Conversation.new(item)
+      begin
+        items = Base.requestItems(url, options)
+        items.each do |item|
+          conversations << Conversation.new(item)
+        end
+      rescue StandardError => e
+        print "Request failed: " + e.message
       end
       conversations
     end
