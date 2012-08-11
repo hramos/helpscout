@@ -35,7 +35,6 @@ customers = HelpScout::Base.customers
 To fetch active conversations:
 
 ```ruby
-conversations = HelpScout::Base.conversations(mailboxId, {:status => "active"})
+conversations = HelpScout::Base.conversations(mailboxId, "active", nil)
 ```
 
-You may query for "all", "active", or "pending" conversations. Default is "all".
