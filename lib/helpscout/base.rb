@@ -187,10 +187,18 @@ module HelpScout
     CONVERSATION_STATUS_ALL = "all"
     CONVERSATION_STATUS_PENDING = "pending"
 
-    # :status String
-    # :modifiedSince Datetime
-    def self.conversations(mailboxId, options={})
+    def self.conversations(mailboxId, status, modifiedSince)
       url = "/mailboxes/#{mailboxId}/conversations.json"
+
+      options = {}
+      if status
+        options["status"] = status
+      end
+      if modifiedSince
+        # TODO: Check modifiedSince format. Needs to be Datetime in UTC
+        options["modifiedSince"] = modifiedSince
+      end
+
       conversations = []
       begin
         items = Base.requestItems(url, options)

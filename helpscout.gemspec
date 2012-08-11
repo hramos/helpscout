@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "helpscout"
-  s.version = "0.0.1.alpha"
+  s.version = "0.0.2.alpha"
 
   s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
   s.authors = ["H\u{e9}ctor Ramos"]
-  s.date = "2012-08-10"
+  s.date = "2012-08-11"
   s.description = ""
   s.email = "hector@hectorramos.com"
   s.extra_rdoc_files = [

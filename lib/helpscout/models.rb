@@ -36,7 +36,7 @@ module HelpScout
   end
 
   class Conversation
-    attr_accessor :id, :folder, :isDraft, :number, :owner, :mailbox, :customer, :threadCount, :status, :subject, :preview, :createdBy, :createdAt, :modifiedAt, :closedAt, :closedBy, :source, :cc, :bcc, :tags
+    attr_accessor :id, :folderId, :isDraft, :number, :owner, :mailbox, :customer, :threadCount, :status, :subject, :preview, :createdBy, :createdAt, :modifiedAt, :closedAt, :closedBy, :source, :cc, :bcc, :tags, :threads
 
     CONVERSATION_STATUS_ACTIVE = "active"
     CONVERSATION_STATUS_PENDING = "pending"
@@ -45,7 +45,7 @@ module HelpScout
 
     def initialize(object)
       @id = object["id"]
-      @folder = object["folder"]
+      @folderId = object["folderId"]
       @isDraft = object["isDraft"]
       @number = object["number"]
       @owner = User.new(object["owner"]) if object["owner"]
@@ -76,10 +76,17 @@ module HelpScout
       @cc = object["cc"]
       @bcc = object["bcc"]
       @tags = object["tags"]
+
+      @threads = []
+      if object["threads"]
+        object["threads"].each do |thread|
+          @threads << Thread.new(thread)
+        end
+      end
     end
 
     def to_s
-      "Assigned to user #{@owner}: #{@subject}\n#{@preview}\nLast update: #{@modifiedAt}\n\n"
+      "Last Modified: #{@modifiedAt}\nAssigned to: #{@owner}\nSubject: #{@subject}\n#{@preview}"
     end
 
     class Attachment
@@ -166,7 +173,7 @@ module HelpScout
           end
         end
 
-        @fromMailbox = Mailbox.new(object["fromMailbox"])
+        @fromMailbox = Mailbox.new(object["fromMailbox"]) if object["fromMailbox"]
         @type = object["type"]
         @state = object["state"]
         @customer = Customer.new(object["customer"]) if object["customer"]
@@ -181,6 +188,10 @@ module HelpScout
             @attachments << Attachment.new(item)
           end
         end
+      end
+
+      def to_s
+        "#{@customer}: #{@body}"
       end
     end
 
