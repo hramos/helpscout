@@ -32,8 +32,7 @@ module HelpScout
     def self.settings
       if @@settings.nil?
         path = "config/helpscout.yml"
-        environment = ENV["RACK_ENV"]
-        @@settings = YAML.load(ERB.new(File.new(path).read).result)[environment]
+        @@settings = YAML.load(ERB.new(File.new(path).read).result)
         @auth = { :username => @@settings["api_key"], :password => "X" }
       end
       @@settings
