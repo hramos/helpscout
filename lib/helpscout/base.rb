@@ -1,4 +1,5 @@
 require "date"
+require "uri"
 require "httparty"
 require "helpscout/models"
 require "erb"
@@ -41,23 +42,21 @@ module HelpScout
     def self.parametrizedUrl(url, params={})
       return url unless params
 
-      complete_url = url
-
+      uri = URI(url)
       parameterString = ""
 
       params.each do |k,v|
         if parameterString.length > 0
           parameterString << "&"
-        else
-          parameterString << "?"
         end
         parameterString << "#{k}=#{v}"
       end
 
       if parameterString.length > 0
-        complete_url << parameterString
+        uri.query = parameterString
       end
-      complete_url
+
+      uri.to_s
     end
 
     def self.requestItem(url, params={})
@@ -101,7 +100,7 @@ module HelpScout
 
         if envelope.page < envelope.pages
           params[:page] = envelope.page + 1
-          items << Base.requestItems(url, params)
+          items = items + Base.requestItems(url, params)
         end
       elsif 400 <= response.code && response.code < 500
         if response["message"]
