@@ -50,6 +50,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<simplecov>, [">= 0"])
       s.add_dependency(%q<reek>, ["~> 1.2.8"])
       s.add_dependency(%q<rdoc>, [">= 0"])
+      s.add_dependency(%q<chronic>, [">= 0.9.0"])
     end
   else
     s.add_dependency(%q<httparty>, [">= 0"])
@@ -59,6 +60,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<simplecov>, [">= 0"])
     s.add_dependency(%q<reek>, ["~> 1.2.8"])
     s.add_dependency(%q<rdoc>, [">= 0"])
+    s.add_dependency(%q<chronic>, [">= 0.9.0"])
   end
 end
 
