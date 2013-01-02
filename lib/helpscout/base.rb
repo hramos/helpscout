@@ -3,6 +3,7 @@ require "uri"
 require "httparty"
 require "helpscout/models"
 require "erb"
+require "chronic"
 
 module HelpScout
   class Base
@@ -193,8 +194,7 @@ module HelpScout
         options["status"] = status
       end
       if modifiedSince
-        # TODO: Check modifiedSince format. Needs to be Datetime in UTC
-        options["modifiedSince"] = modifiedSince
+        options["modifiedSince"] = Chronic.parse(modifiedSince).strftime("%Y-%m-%dT%H:%M:%SZ")
       end
 
       conversations = []
