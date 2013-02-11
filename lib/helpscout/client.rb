@@ -37,8 +37,6 @@ require "erb"
 require "httparty"
 require "yaml"
 
-require "lib/helpscout/models"
-
 module HelpScout
   class Client
     include HTTParty
@@ -62,7 +60,9 @@ module HelpScout
     def self.settings
       if @@settings.nil?
         path = "config/helpscout.yml"
-        @@settings = YAML.load(ERB.new(File.new(path).read).result)
+        if File.exist?(path)
+          @@settings = YAML.load(ERB.new(File.new(path).read).result)
+        end
       end
       @@settings
     end
@@ -230,7 +230,7 @@ module HelpScout
     # key  String  Help Scout API Key. Optional. If not passed, the key will be
     #              loaded from @@settings, which defaults to helpscout.yml.
 
-    def initialize(key=nil)
+    def initialize(key = nil)
       Client.settings
   
       if key.nil?

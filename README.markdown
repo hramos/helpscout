@@ -1,6 +1,6 @@
 # Helpscout Developers API gem
 
-This gem is in alpha.
+This gem is in beta.
 
 ## Usage
 
@@ -9,25 +9,25 @@ This gem is in alpha.
 2. Initialize your HelpScout client
 
 ```ruby
-HelpScout::Base.load!(HELPSCOUT_API_KEY)
+helpscout = HelpScout::Client.new(HELPSCOUT_API_KEY)
 ```
 
 #### Fetching Users
 
 ```ruby
-users = HelpScout::Base.users
+users = helpscout.users
 ```
 
 #### Fetching Mailboxes
 
 ```ruby
-mailboxes = HelpScout::Base.mailboxes
+mailboxes = helpscout.mailboxes
 ```
 
 #### Fetching Customers
 
 ```ruby
-customers = HelpScout::Base.customers
+customers = helpscout.customers
 ```
 
 #### Fetching Conversations
@@ -35,6 +35,6 @@ customers = HelpScout::Base.customers
 To fetch active conversations:
 
 ```ruby
-conversations = HelpScout::Base.conversations(mailboxId, "active", nil)
+conversations = helpscout.conversations(mailboxId, "active", nil)
 ```
 
