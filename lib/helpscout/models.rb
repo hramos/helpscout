@@ -68,14 +68,14 @@ module HelpScout
   # *name       String    Feedback              Name of the Mailbox
   #  slug       String    47204a026903ce6d      Key used to represent this 
   #                                             Mailbox
-  #  email      String    feedback@support.com  Email address
+  #  email      String    feedback@parse.com    Email address
   #  createdAt  DateTime  2012-07-23T12:34:12Z  UTC time when this mailbox was 
   #                                             created.
   #  modifiedAt DateTime  2012-07-24T20:18:33Z  UTC time when this mailbox was 
   #                                             modified.
 
   class Mailbox
-    attr_reader :id, :name, :slug, :email, :createdAt, :modifiedAt
+    attr_reader :id, :name, :slug, :email, :createdAt, :modifiedAt, :folders
 
     # Creates a new Mailbox object from a Hash of attributes
     def initialize(object)
@@ -87,6 +87,13 @@ module HelpScout
       
       @slug = object["slug"]
       @email = object["email"]
+
+      @folders = []
+      if object["folders"]
+        object["folders"].each do |folder|
+          @folders << Folder.new(folder)
+        end
+      end      
     end
   end
 
@@ -101,12 +108,12 @@ module HelpScout
   #  isDraft      Boolean     false                 Is this a draft?
   #  number       Int         349                   The conversation number 
   #                                                 displayed in the UI.
-  #  owner        User                              User of the Help Scout user 
+  #  owner        Person                            User of the Help Scout user 
   #                                                 that is currently assigned 
   #                                                 to this conversation
   #  mailbox      Mailbox                           Mailbox to which this 
   #                                                 conversation belongs.
-  #  customer     Customer                          Customer to which this 
+  #  customer     Person                            Customer to which this 
   #                                                 conversation belongs.
   #  threadCount  Int         4                     This count represents the 
   #                                                 number of published threads 
@@ -118,9 +125,9 @@ module HelpScout
   #  status       String      active                Status of the conversation.
   #  subject      String      I need help!   
   #  preview      String      Hello, I...   
-  #  createdBy    Customer                          Either the Customer or User 
-  #               - or -                            that created this 
-  #               User                              conversation. 
+  #  createdBy    Person                            Either the Customer or User 
+  #                                                 that created this 
+  #                                                 conversation. 
   #                                                 Inspect the Source object 
   #                                                 for clarification.
   #  createdAt    DateTime    2012-07-23T12:34:12Z  UTC time when this 
@@ -130,7 +137,7 @@ module HelpScout
   #  closedAt     DateTime                          UTC time when this 
   #                                                 conversation was closed.
   #                                                 Null if not closed.
-  #  closedBy     User                              User of the Help Scout user 
+  #  closedBy     Person                            User of the Help Scout user 
   #                                                 that closed this 
   #                                                 conversation.
   #  source       Source                            Specifies the method in 
@@ -153,7 +160,7 @@ module HelpScout
   # * STATUS_SPAM
 
   class Conversation
-    attr_reader :id, :folderId, :isDraft, :number, :owner, :mailbox, :customer, :threadCount, :status, :subject, :preview, :createdBy, :createdAt, :modifiedAt, :closedAt, :closedBy, :source, :cc, :bcc, :tags, :threads, :url
+    attr_reader :id, :type, :folderId, :isDraft, :number, :owner, :mailbox, :customer, :threadCount, :status, :subject, :preview, :createdBy, :createdAt, :modifiedAt, :closedAt, :closedBy, :source, :cc, :bcc, :tags, :threads, :url
 
     STATUS_ACTIVE = "active"
     STATUS_PENDING = "pending"
@@ -165,32 +172,22 @@ module HelpScout
       @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
       @modifiedAt = DateTime.iso8601(object["userModifiedAt"]) if object["userModifiedAt"]
       @closedAt = DateTime.iso8601(object["closedAt"]) if object["closedAt"]
+
       @id = object["id"]
+      @type = object["type"]
       @folderId = object["folderId"]
       @isDraft = object["isDraft"]
       @number = object["number"]
-      @owner = User.new(object["owner"]) if object["owner"]
+      @owner = Person.new(object["owner"]) if object["owner"]
       @mailbox = Mailbox.new(object["mailbox"]) if object["mailbox"]
-      @customer = Customer.new(object["customer"]) if object["customer"]
+      @customer = Person.new(object["customer"]) if object["customer"]
       @threadCount = object["threadCount"]
       @status = object["status"]
       @subject = object["subject"]
       @preview = object["preview"]
-      @closedBy = User.new(object["closedBy"]) if object["closedBy"]
-
-      @source = nil
-      if object["source"]
-        @source = Source.new(object["source"])
-
-        if object["createdBy"]
-          if @source.type == Source::VIA_CUSTOMER
-            @createdBy = Customer.new(object["createdBy"])
-          elsif @source.type == Source::VIA_USER
-            @createdBy = User.new(object["createdBy"])
-          end
-        end
-      end
-
+      @closedBy = Person.new(object["closedBy"]) if object["closedBy"]
+      @createdBy = Person.new(object["person"]) if object["person"]
+      @source = Source.new(object["source"]) if object["source"]
       @cc = object["cc"]
       @bcc = object["bcc"]
       @tags = object["tags"]
@@ -216,7 +213,7 @@ module HelpScout
     #
     #  Name         Type      Example               Notes
     #  id           Int       88171881              Unique identifier
-    #  assignedTo   User                            User of the Help Scout user 
+    #  assignedTo   Person                          User of the Help Scout user 
     #                                               to which this conversation 
     #                                               has been assigned.
     #  status       String    active                Status of the thread. Thread
@@ -226,9 +223,9 @@ module HelpScout
     #                                               be set to STATUS_NO_CHANGE.
     #  createdAt    DateTime  2012-07-23T12:34:12Z  UTC time when this thread 
     #                                               was created.
-    #  createdBy    Customer                        Either the Customer or User 
-    #               - or -                          that created this 
-    #               User                            conversation. Inspect the 
+    #  createdBy    Person                          Either the Customer or User 
+    #                                               that created this 
+    #                                               conversation. Inspect the 
     #                                               Source object for 
     #                                               clarification.
     #  source       Source     
@@ -238,7 +235,7 @@ module HelpScout
     #                                               which it was moved.
     #  type         String    message               The type of thread. 
     #  state        String    published             The state of the thread. 
-    #  customer     Customer                        If type is message, this is 
+    #  customer     Person                          If type is message, this is 
     #                                               the Customer of the customer
     #                                               in which the message was 
     #                                               sent. If type is customer, 
@@ -319,26 +316,14 @@ module HelpScout
         @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
 
         @id = object["id"]
-        @assignedTo = User.new(object["assignedTo"]) if object["assignedTo"]
+        @assignedTo = Person.new(object["assignedTo"]) if object["assignedTo"]
+        @createdBy = Person.new(object["createdBy"]) if object["createdBy"]
         @status = object["status"]
-
-        @source = nil
-        if object["source"]
-          @source = Source.new(object["source"])
-
-          if object["createdBy"]
-            if @source.type == Source::VIA_CUSTOMER
-              @createdBy = Customer.new(object["createdBy"])
-            elsif @source.type == Source::VIA_USER
-              @createdBy = User.new(object["createdBy"])
-            end
-          end
-        end
-
+        @source = Source.new(object["source"]) if object["source"]
         @fromMailbox = Mailbox.new(object["fromMailbox"]) if object["fromMailbox"]
         @type = object["type"]
         @state = object["state"]
-        @customer = Customer.new(object["customer"]) if object["customer"]
+        @customer = Person.new(object["customer"]) if object["customer"]
         @body = object["body"]
         @to = object["to"]
         @cc = object["cc"]
@@ -408,21 +393,56 @@ module HelpScout
   end
 
 
+  # Person
+  # http://developer.helpscout.net/objects/person/
+  #
+  # The person object is a subset of the data representing a Customer or 
+  # User. The 'type' property will specify if this person is represented by 
+  # a 'user' or a 'customer'.
+  # 
+  #  Name        Type      Example                 Notes
+  #  id          Int       1234                    Unique identifier
+  #  firstName   String    Jack   
+  #  lastName    String    Sprout   
+  #  email       String    jack.sprout@gmail.com  
+  #  phone       String    800-555-1212  
+  #  type        String    user 
+  #
+  # Possible values for type include:
+  # * TYPE_USER
+  # * TYPE_CUSTOMER
+
+  class Person
+    attr_reader :id, :firstName, :lastName, :email, :phone, :type
+
+    TYPE_USER = "user"
+    TYPE_CUSTOMER = "customer"
+
+    # Creates a new Person object from a Hash of attributes
+    def initialize(object)
+      @id = object["id"]
+      @firstName = object["firstName"]
+      @lastName = object["lastName"]
+      @email = object["email"]
+      @phone = object["phone"]
+      @type = object["type"]
+    end
+
+    # Returns a String suitable for display
+    def to_s
+      "#{@firstName} #{@lastName}"
+    end
+  end
+
+
   # User
   # http://developer.helpscout.net/objects/user/
-  # http://developer.helpscout.net/objects/user/user-ref/
-  #
-  # UserRefs are a subset of a full User object, and only include the attributes
-  # marked with a *.
-  # 
-  # UserRefs are returned by endpoints that include multiple users.
-  # A full User object can be obtained by fetching a single user directly.
   #
   #  Name        Type      Example                 Notes
-  # *id          Int       1234                    Unique identifier
-  # *firstName   String    Jack   
-  # *lastName    String    Sprout   
-  # *email       String    jack.sprout@gmail.com  
+  #  id          Int       1234                    Unique identifier
+  #  firstName   String    Jack   
+  #  lastName    String    Sprout   
+  #  email       String    jack.sprout@gmail.com  
   #  role        String    owner                   Role of this user.
   #  timezone    String    America/New_York   
   #  photoUrl    String    http://.../avatar.jpg   The user's photo, if one 
@@ -438,7 +458,7 @@ module HelpScout
   # * ROLE_USER
 
   class User
-    attr_reader :id, :firstName, :lastName, :email, :role, :timezone, :photoUrl, :createdAt, :createdBy
+    attr_reader :id, :firstName, :lastName, :email, :role, :timezone, :photoUrl, :createdAt, :modifiedAt
 
     ROLE_OWNER = "owner"
     ROLE_ADMIN = "admin"
@@ -447,6 +467,7 @@ module HelpScout
     # Creates a new User object from a Hash of attributes
     def initialize(object)
       @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
+      @modifiedAt = DateTime.iso8601(object["modifiedAt"]) if object["modifiedAt"]
 
       @id = object["id"]
       @firstName = object["firstName"]
@@ -455,7 +476,6 @@ module HelpScout
       @role = object["role"]
       @timezone = object["timezone"]
       @photoUrl = object["photoUrl"]
-      @createdBy = object["createdBy"]
     end
 
     # Returns a String suitable for display
@@ -464,18 +484,11 @@ module HelpScout
     end
   end
 
-
   # Customer
   # http://developer.helpscout.net/objects/customer/
-  # http://developer.helpscout.net/objects/customer/customer-ref/
   #
-  # CustomerRefs are a subset of a full Customer object, and only include the 
-  # attributes marked with a *.
-  #
-  # CustomerRefs are returned by endpoints that include multiple customers.
-  #
-  # A full Customer object can be obtained by fetching a single customer 
-  # directly.
+  # Attributes marked with a * are returned when listing customers. Other
+  # attributes are only returned when fetching a single customer.
   #
   #  Name          Type      Example               Notes
   # *id            Int       29418                 Unique identifier
@@ -483,17 +496,25 @@ module HelpScout
   # *lastName      String    Bear   
   # *email         String    vbear@mywork.com      If the customer has multiple 
   #                                                emails, only one is returned.
-  #  photoUrl      String    http://../avatar.jpg   
-  #  photoType     String    twitter               Type of photo.
-  #  gender        String    Male                  Gender of this customer.
-  #  age           String    30-35  
-  #  organization  String    Acme, Inc  
-  #  jobTitle      String    CEO and Co-Founder   
-  #  location      String    Austin
-  #  createdAt     DateTime  2012-07-23T12:34:12Z  UTC time when this customer 
+  # *photoUrl      String    http://../avatar.jpg   
+  # *photoType     String    twitter               Type of photo.
+  # *gender        String    Male                  Gender of this customer.
+  # *age           String    30-35  
+  # *organization  String    Acme, Inc  
+  # *jobTitle      String    CEO and Co-Founder   
+  # *location      String    Austin
+  # *createdAt     DateTime  2012-07-23T12:34:12Z  UTC time when this customer 
   #                                                was created.
-  #  modifiedAt    DateTime  2012-07-24T20:18:33Z  UTC time when this customer 
+  # *modifiedAt    DateTime  2012-07-24T20:18:33Z  UTC time when this customer 
   #                                                was modified.
+  #  background      String   I've worked with...  This is the Background Info 
+  #                                                field from the UI.
+  #  address         Address
+  #  socialProfiles  Array                         Array of SocialProfiles    
+  #  emails          Array                         Array of Emails
+  #  phones          Array                         Array of Phones
+  #  chats           Array                         Array of Chats
+  #  websites        Array                         Array of Websites
   #
   # Possible values for photoType include:
   # * PHOTO_TYPE_UNKNOWN

@@ -13,7 +13,7 @@
 # Rate Limiting
 # Requests will be limited to 200 requests per minute. Response code 429 will 
 # be returned when throttle limit has been reached. A "Retry-After" header will
-# be returned indicating how many seconds to wait until retry.
+#  be returned indicating how many seconds to wait until retry.
 #
 # Formats
 # Each endpoint will specify the response format in the URL. However, the API
@@ -82,13 +82,15 @@ module HelpScout
     #  Header   Status  Int    200
     #  Body     item
 
-    def self.requestItem(auth, url, params={})
+    def self.request_item(auth, url, params = {})
       item = nil
 
       request_url = ""
       request_url << url
       if params
-        request_url << "?" + params.to_query
+        query = ""
+        params.each { |k,v| query += "#{k}=#{v}&" }
+        request_url << "?" + query
       end
 
       begin
@@ -136,7 +138,7 @@ module HelpScout
     #           count   Int    Total number of objects available
     #           items   Array  Collection of objects
 
-    def self.requestItems(auth, url, params={})
+    def self.request_items(auth, url, params = {})
       items = []
 
       request_url = ""
@@ -192,7 +194,7 @@ module HelpScout
     #           count   Int    Total number of objects available
     #           items   Array  Collection of objects
 
-    def self.requestCount(auth, url, params={})
+    def self.request_count(auth, url, params = {})
       request_url = ""
       request_url << url
       if params
@@ -222,6 +224,36 @@ module HelpScout
       end     
     end
 
+
+    # Sends a POST request to create a single item from the Help Scout API.
+    #
+    # url     String  A string representing the url to POST.
+    # params  Hash    A hash of POST parameters to use for this particular 
+    #                 request.
+    #
+    # Response
+    #  Name      Type    Notes
+    #  Location  String  https://api.helpscout.net/v1/conversations/{id}.json
+
+    def self.create_item(auth, url, params = {})
+      begin
+        response = Client.post(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+      rescue SocketError => se
+        raise StandardError, se.message
+      end
+
+      if response.code == 201
+        if response["item"]
+          response["item"]
+        else
+          response["Location"]
+        end
+      else
+        raise StandardError.new("Server Response: #{response.code} #{response.message}")
+      end
+    end
+
+
     # HelpScout::Client.new
     # 
     # Initializes the Help Scout Client. Once called, you may use any of the 
@@ -230,7 +262,7 @@ module HelpScout
     # key  String  Help Scout API Key. Optional. If not passed, the key will be
     #              loaded from @@settings, which defaults to helpscout.yml.
 
-    def initialize(key = nil)
+    def initialize(key=nil)
       Client.settings
   
       if key.nil?
@@ -252,7 +284,11 @@ module HelpScout
     #
     # Request 
     #  REST Method: GET
-    #  URL: https://api.helpscout.net/v1/users/{id}.json
+    #  URL: https://api.helpscout.net/v1/conversations/{conversationId}.json
+    #
+    #  GET Parameters
+    #  Name            Type
+    #  conversationId  Int  id of the Conversation being requested
     #
     # Response
     #  Name  Type
@@ -260,7 +296,7 @@ module HelpScout
 
     def user(userId)
       url = "/users/#{userId}.json"
-      item = Client.requestItem(@auth, url, nil)
+      item = Client.request_item(@auth, url, nil)
       user = nil
       if item
         user = User.new(item)
@@ -288,7 +324,7 @@ module HelpScout
 
     def users
       url = "/users.json"
-      items = Client.requestItems(@auth, url, :page => 1)
+      items = Client.request_items(@auth, url, :page => 1)
       users = []
       items.each do |item|
         users << User.new(item)
@@ -316,9 +352,9 @@ module HelpScout
     #  Name   Type
     #  items  Array  Collection of User objects
 
-    def usersInMailbox(mailboxId)
+    def users_in_mailbox(mailboxId)
       url ="/mailboxes/#{mailboxId}/users.json"
-      items = Client.requestItems(@auth, url, :page => 1)
+      items = Client.request_items(@auth, url, :page => 1)
       users = []
       items.each do |item|
         users << User.new(item)
@@ -348,12 +384,12 @@ module HelpScout
       url = "/mailboxes.json"
       mailboxes = []
       begin
-        items = Client.requestItems(@auth, url, {})
+        items = Client.request_items(@auth, url, {})
         items.each do |item|
           mailboxes << Mailbox.new(item)
         end
       rescue StandardError => e
-        print "List Mailbox Request failed: " + e.message
+        puts "List Mailbox Request failed: #{e.message}"
       end
       mailboxes
     end
@@ -376,7 +412,7 @@ module HelpScout
     
     def mailbox(mailboxId)
       url = "/mailboxes/#{mailboxId}.json"
-      item = Client.requestItem(@auth, url, nil)
+      item = Client.request_item(@auth, url, nil)
       mailbox = nil
       if item
         mailbox = Mailbox.new(item)
@@ -404,9 +440,9 @@ module HelpScout
     #  Name   Type
     #  items  Array  Collection of Mailbox objects
 
-    def foldersInMailbox(mailboxId)
+    def folders_in_mailbox(mailboxId)
       url = "/mailboxes/#{mailboxId}/folders.json"
-      items = Client.requestItems(@auth, url, :page => 1)
+      items = Client.request_items(@auth, url, :page => 1)
       folders = []
       items.each do |item|
         folders << Folder.new(item)
@@ -416,7 +452,7 @@ module HelpScout
 
 
     # Get Conversation
-    # http://developer.helpscout.net/conversations/
+    # http://developer.helpscout.net/conversations/get/
     #
     # Fetches a single Conversation
     #
@@ -434,19 +470,58 @@ module HelpScout
       url = "/conversations/#{conversationId}.json"
 
       begin
-        item = Client.requestItem(@auth, url, nil)
+        item = Client.request_item(@auth, url, nil)
         conversation = nil
         if item
           conversation = Conversation.new(item)
         end
       rescue StandardError => e
-        print "Could not fetch conversation with id #{conversationId}: " + e.message
+        puts "Could not fetch conversation with id #{conversationId}: #{e.message}"
+      end
+    end
+
+
+    # Create Conversation
+    # http://developer.helpscout.net/conversations/create/
+    #
+    # Creates a new Conversation.
+    #
+    # Request
+    #  REST Method: POST
+    #  URL: https://api.helpscout.net/v1/conversations.json
+    #
+    #  POST Parameters
+    #  Name          Type          Required  Notes
+    #  conversation  Conversation  Yes       
+    #  import        boolean       No        The import parameter enables 
+    #                                        conversations to be created for 
+    #                                        historical purposes (i.e. if moving
+    #                                        from a different platform, you can 
+    #                                        import your history). When import 
+    #                                        is set to true, no outgoing emails 
+    #                                        or notifications will be generated.
+    #  reload        boolean       No        Set this parameter to 'true' to 
+    #                                        return the created conversation in 
+    #                                        the response.
+    #
+
+    def create_conversation(conversation)
+      if !conversation
+        raise StandardError.new("Missing Conversation")
+      end
+
+      url = "/conversations.json"
+
+      begin
+        response = Client.create_item(@auth, url, conversation.to_json)
+      rescue StandardError => e
+        puts "Could not create conversation: #{e.message}"
       end
     end
 
 
     # List Conversations
-    # http://developer.helpscout.net/conversations/
+    # http://developer.helpscout.net/conversations/list/
     #
     # Fetches conversations in a mailbox with a given status
     #
@@ -513,13 +588,13 @@ module HelpScout
 
       begin
         options["page"] = page
-        items = Client.requestItems(@auth, url, options)
+        items = Client.request_items(@auth, url, options)
         items.each do |item|
           conversations << Conversation.new(item)
         end
         page = page + 1
       rescue StandardError => e
-        print "List Conversations Request failed: " + e.message
+        puts "List Conversations Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
 
       if limit > 0 && conversations.count > limit
@@ -573,7 +648,7 @@ module HelpScout
     #                threads, you need to retrieve the full conversation object 
     #                via the Get Conversation call.
 
-    def conversationsInFolder(mailboxId, folderId, status, limit=0, modifiedSince)
+    def conversations_in_folder(mailboxId, folderId, status, limit=0, modifiedSince)
       url = "/mailboxes/#{mailboxId}/folders/#{folderId}/conversations.json"
 
       page = 1
@@ -595,13 +670,13 @@ module HelpScout
 
       begin
         options["page"] = page
-        items = Client.requestItems(@auth, url, options)
+        items = Client.request_items(@auth, url, options)
         items.each do |item|
           conversations << Conversation.new(item)
         end
         page = page + 1
       rescue StandardError => e
-        print "List Conversations In Folder Request failed: " + e.message
+        puts "List Conversations In Folder Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
 
       if limit > 0 && conversations.count > limit
@@ -647,7 +722,7 @@ module HelpScout
     #  Name   Type
     #  count  Integer  Count of Conversation objects.
 
-    def conversationCount(mailboxId, status, modifiedSince)
+    def conversation_count(mailboxId, status, modifiedSince)
       url = "/mailboxes/#{mailboxId}/conversations.json"
 
       page = 1
@@ -665,9 +740,9 @@ module HelpScout
 
       begin
         options["page"] = page
-        count = Client.requestCount(@auth, url, options)
+        count = Client.request_count(@auth, url, options)
       rescue StandardError => e
-        print "Conversation Count Request failed: " + e.message
+        puts "Conversation Count Request failed: #{e.message}"
       end
     end
 
@@ -687,9 +762,9 @@ module HelpScout
     #  Name  Type
     #  item  Conversation::AttachmentData
 
-    def attachmentData(attachmentId)
+    def attachment_data(attachmentId)
       url = "/attachments/#{attachmentId}/data.json"
-      item = Client.requestItem(@auth, url, nil)
+      item = Client.request_item(@auth, url, nil)
       attachmentData = nil
       if item
         attachmentData = Conversation::AttachmentData.new(item)
@@ -716,7 +791,7 @@ module HelpScout
 
     def customer(customerId)
       url = "/customers/#{customerId}.json"
-      item = Client.requestItem(@auth, url, nil)
+      item = Client.request_item(@auth, url, nil)
       customer = nil
       if item
         customer = Customer.new(item)
@@ -729,8 +804,10 @@ module HelpScout
     # List Customers
     # http://developer.helpscout.net/customers/
     #
-    # Fetches all customers. Customers are returned by createdAt date, from 
-    # newest to oldest.
+    # Customers can be filtered on any combination of first name, last name, and
+    # email.
+    #
+    # Customers are returned by createdAt date, from newest to oldest.    
     #
     # Request 
     #  REST Method: GET
@@ -738,21 +815,97 @@ module HelpScout
     #
     #  Parameters:
     #   Name           Type      Required  Default  Notes
-    #   page           Int       No        1 
+    #   Name       Type    Required  Default
+    #   firstName  String  No
+    #   lastName   String  No
+    #   email      String  No
+    #   page       Int     No        1
     #
     # Response
     #  Name   Type
     #  items  Array  Collection of Customer objects.
 
-    def customers
+    def customers(limit=0, firstName=nil, lastName=nil, email=nil)
       url = "/customers.json"
-      items = Client.requestItems(@auth, url, :page => 1)
+
+      page = 1
+      options = {}
+
+      if limit < 0
+        limit = 0
+      end
+
+      if firstName
+        options["firstName"] = firstName
+      end
+
+      if lastName
+        options["lastName"] = lastName
+      end
+
+      if email
+        options["email"] = email
+      end
+
       customers = []
-      items.each do |item|
-        customers << Customer.new(item)
+
+      begin
+        options["page"] = page
+        items = Client.request_items(@auth, url, options)
+        items.each do |item|
+          customers << Customer.new(item)
+        end
+        page = page + 1
+      rescue StandardError => e
+        puts "Request failed: #{e.message}"
+      end while items && items.count > 0 && (limit == 0 || customers.count < limit)
+
+      if limit > 0 && customers.count > limit
+        customers = customers[0..limit-1]
       end
 
       customers
+    end
+
+    # Helper method to find customers by email
+    def customers_by_email(email)
+      customers(0, nil, nil, email)
+    end
+
+    # Create Customer
+    # http://developer.helpscout.net/customers/create/
+    #
+    # Creates a new Customer.
+    #
+    # Request
+    #  REST Method: POST
+    #  URL: https://api.helpscout.net/v1/customers.json
+    #
+    #  POST Parameters
+    #  Name      Type      Required  Notes
+    #  customer  Customer  Yes       The body of the request       
+    #  reload    boolean   No        Set to true to return the customer in the 
+    #                                response.
+    # Response
+    #  Response   Name      Type    Notes
+    #  Header     Status    Integer 201
+    #  Header     Location  String  https://api.helpscout.net/v1/customer/{id}.json
+
+    def create_customer(customer)
+      if !customer
+        raise StandardError.new("Missing Customer")
+      end
+
+      url = "/customers.json"
+      params = JSON.parse(customer.to_json)
+
+      begin
+        response = Client.create_item(@auth, url, customer.to_json)
+        true
+      rescue StandardError => e
+        puts "Could not create customer: #{e.message}"
+        false
+      end
     end
   end  
 end
