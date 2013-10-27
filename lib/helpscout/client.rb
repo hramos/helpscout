@@ -565,6 +565,7 @@ module HelpScout
     CONVERSATION_FILTER_STATUS_ACTIVE = "active"
     CONVERSATION_FILTER_STATUS_ALL = "all"
     CONVERSATION_FILTER_STATUS_PENDING = "pending"
+    CONVERSATION_FILTER_STATUS_CLOSED = "closed"
 
     def conversations(mailboxId, status, limit=0, modifiedSince)
       url = "/mailboxes/#{mailboxId}/conversations.json"
@@ -576,7 +577,7 @@ module HelpScout
         limit = 0
       end
 
-      if status && (status == CONVERSATION_FILTER_STATUS_ACTIVE || status == CONVERSATION_FILTER_STATUS_ALL || status == CONVERSATION_FILTER_STATUS_PENDING)
+      if status && (status == CONVERSATION_FILTER_STATUS_ACTIVE || status == CONVERSATION_FILTER_STATUS_ALL || status == CONVERSATION_FILTER_STATUS_PENDING || status == CONVERSATION_FILTER_STATUS_CLOSED)
         options["status"] = status
       end
 
