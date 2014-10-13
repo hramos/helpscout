@@ -253,6 +253,35 @@ module HelpScout
       end
     end
 
+    # Sends a POST request to the Help Scout API.
+    #
+    # url     String  A string representing the url to POST.
+    #
+    # Response
+    #           Name    Type   Notes
+    #  Header   Status  Int    200
+
+    def self.post_request(auth, url)
+      begin
+        response = Client.post(url, {:basic_auth => auth})
+      rescue SocketError => se
+        raise StandardError, se.message
+      end
+
+      if 200 <= response.code && response.code < 300
+        true
+      elsif 400 <= response.code && response.code < 500
+        if response["message"]
+          envelope = ErrorEnvelope.new(response)
+          raise StandardError, envelope.message
+        else
+          raise StandardError, response["error"]
+        end
+      else
+        raise StandardError, "Server Response: #{response.code}"
+      end
+    end
+
 
     # HelpScout::Client.new
     # 
@@ -906,5 +935,29 @@ module HelpScout
         false
       end
     end
-  end  
+
+    # Run Workflow on Conversation
+    # http://developer.helpscout.net/help-desk-api/workflows/conversation/
+    #
+    # Run Workflow on a Single Conversation.
+    #  Applies the actions for the specified manual workflow on the specified
+    #  conversation. Specifying an automatic workflow will return an error.
+    #
+    # Request
+    #  REST Method: POST
+    #  URL: https://api.helpscout.net/v1/workflows/{id}/conversations/{conversation-id}.json
+    # Response
+    #  Response   Name      Type     Notes
+    #  Header     Status    Integer  200
+
+    def run_workflow(workflow_id, conversation_id)
+      url = "/workflows/#{ workflow_id }/conversations/#{ conversation_id }.json"
+
+      begin
+        response = Client.post_request(@auth, url)
+      rescue StandardError => e
+        puts "Could not run workflow (workflow_id: #{workflow_id.inspect}) on conversation_id: #{ conversation_id.inspect}\n#{ e }"
+      end
+    end
+  end
 end
