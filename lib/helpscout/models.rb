@@ -170,7 +170,14 @@ module HelpScout
     # Creates a new Conversation object from a Hash of attributes
     def initialize(object)
       @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
-      @modifiedAt = DateTime.iso8601(object["userModifiedAt"]) if object["userModifiedAt"]
+      
+      # helpscout is inconsistent in their modifiedAt key. Conversations list action uses 'userModifiedAt'
+      if object.has_key?("userModifiedAt")
+        @modifiedAt = DateTime.iso8601(object["userModifiedAt"])
+      elsif object.has_key?("modifiedAt")
+        @modifiedAt = DateTime.iso8601(object["modifiedAt"])
+      end
+
       @closedAt = DateTime.iso8601(object["closedAt"]) if object["closedAt"]
 
       @id = object["id"]
