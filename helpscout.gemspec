@@ -55,7 +55,8 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<httparty>, [">= 0"])
     s.add_dependency(%q<bundler>, [">= 1.2.3"])
     s.add_dependency(%q<jeweler>, ["~> 1.8.4"])
-    s.add_dependency(%q<httparty>, [">= 0"])
+    # s.add_dependency(%q<httparty>, [">= 0"])
+    s.add_runtime_dependency 'httparty', '>= 0', '>= 0'
     s.add_dependency(%q<simplecov>, [">= 0"])
     s.add_dependency(%q<reek>, ["~> 1.2.8"])
     s.add_dependency(%q<rdoc>, [">= 0"])
