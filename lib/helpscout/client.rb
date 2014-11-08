@@ -253,6 +253,34 @@ module HelpScout
       end
     end
 
+    # Sends a PUT request to update a single item from the Help Scout API.
+    #
+    # url     String  A string representing the url to PUT.
+    # params  Hash    A hash of PUT parameters to use for this particular
+    #                 request.
+    #
+    # Response
+    #  Response  Name    Type     Notes
+    #  Header    Status  Integer  200
+
+    def self.update_item(auth, url, params = {})
+      begin
+        response = Client.put(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+      rescue SocketError => se
+        raise StandardError, se.message
+      end
+
+      if response.code == 200
+        if response["item"]
+          response["item"]
+        else
+          response["Location"]
+        end
+      else
+        raise StandardError.new("Server Response: #{response.code} #{response.message}")
+      end
+    end
+
     # Sends a POST request to the Help Scout API.
     #
     # url     String  A string representing the url to POST.
@@ -506,6 +534,7 @@ module HelpScout
         end
       rescue StandardError => e
         puts "Could not fetch conversation with id #{conversationId}: #{e.message}"
+        # raise "Could not fetch conversation with id #{conversationId}: #{e.message}"
       end
     end
 
@@ -548,6 +577,31 @@ module HelpScout
       end
     end
 
+    # Update Conversation
+    # http://developer.helpscout.net/help-desk-api/conversations/update/
+    #
+    # Request
+    #  REST Method: PUT
+    #  URL: https://api.helpscout.net/v1/conversations/{id}.json
+    #  Content-Type: `application/json`
+    #
+    # Response
+    # Response  Name    Type     Notes
+    # Header    Status  Integer  200
+
+    def update_conversation(conversation_id, conversation)
+      if !conversation
+        raise StandardError.new("Missing Conversation")
+      end
+
+      url = "/conversations/#{conversation_id}.json"
+
+      begin
+        response = Client.update_item(@auth, url, conversation.to_json)
+      rescue StandardError => e
+        puts "Could not create conversation: #{e.message}"
+      end
+    end
 
     # List Conversations
     # http://developer.helpscout.net/conversations/list/
@@ -946,6 +1000,7 @@ module HelpScout
     # Request
     #  REST Method: POST
     #  URL: https://api.helpscout.net/v1/workflows/{id}/conversations/{conversation-id}.json
+    #
     # Response
     #  Response   Name      Type     Notes
     #  Header     Status    Integer  200
@@ -957,6 +1012,46 @@ module HelpScout
         response = Client.post_request(@auth, url)
       rescue StandardError => e
         puts "Could not run workflow (workflow_id: #{workflow_id.inspect}) on conversation_id: #{ conversation_id.inspect}\n#{ e }"
+      end
+    end
+
+    # Create Conversation Thread
+    # http://developer.helpscout.net/help-desk-api/conversations/create-thread/
+    #
+    # Request
+    #  REST Method: POST
+    #  URL: https://api.helpscout.net/v1/conversations/{id}.json
+    #  Content-Type: `application/json`
+    #
+    # Parameters:
+    #  Name       Type                  Required     Default      Notes
+    #  thread     ConversationThread    Yes                       The body of the request.
+    #  imported   boolean               No           false        When the 'imported' request parameter
+    #                                                               is set to true, no outgoing emails
+    #                                                               or notifications will be generated.
+    #  reload     boolean               No           false        Set this request parameter to true to
+    #                                                               return the entire conversation in
+    #                                                               the response.
+    #
+    # Response
+    #  Response   Name      Type     Notes
+    #  Header     Status    Integer  201
+
+    def create_conversation_thread(conversation_id, conversation_thread)
+      if !conversation_id
+        raise StandardError.new("Missing `conversation_id`")
+      end
+
+      if !conversation_thread
+        raise StandardError.new("Missing ConversationThread")
+      end
+
+      url = "/conversations/#{conversation_id}.json"
+
+      begin
+        response = Client.create_item(@auth, url, conversation_thread.to_json)
+      rescue StandardError => e
+        puts "Could not create conversation_thread: #{e.message}\n#{e.backtrace}"
       end
     end
   end
