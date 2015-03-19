@@ -604,7 +604,6 @@ module HelpScout
       conversations
     end
 
-
     # List Conversations in Folder
     # http://developer.helpscout.net/conversations/
     #
@@ -647,9 +646,21 @@ module HelpScout
     #                are not returned on this call. To get the conversation
     #                threads, you need to retrieve the full conversation object
     #                via the Get Conversation call.
+    def conversations_in_folder(mailboxId, folderId, status = nil, limit=0, modifiedSince=nil)
+      conversations_for(mailboxId, "folders", folderId, status, limit, modifiedSince)
+    end
 
-    def conversations_in_folder(mailboxId, folderId, status, limit=0, modifiedSince)
-      url = "/mailboxes/#{mailboxId}/folders/#{folderId}/conversations.json"
+    #
+    # List conversations for a customer
+    #
+    # See conversations_in_folder for options
+    #
+    def conversations_for_customer(mailboxId, customerId, status=nil, limit=0, modifiedSince=nil)
+      conversations_for(mailboxId, "customers", customerId, status, limit, modifiedSince)
+    end
+
+    def conversations_for(mailboxId, type, id, status=nil, limit=0, modifiedSince=nil)
+      url = "/mailboxes/#{mailboxId}/#{type}/#{id}/conversations.json"
 
       page = 1
       options = {}
@@ -685,6 +696,8 @@ module HelpScout
 
       conversations
     end
+
+    private :conversations_for
 
 
     # Conversation Count
