@@ -566,10 +566,9 @@ module HelpScout
     CONVERSATION_FILTER_STATUS_ALL = "all"
     CONVERSATION_FILTER_STATUS_PENDING = "pending"
 
-    def conversations(mailboxId, status, limit=0, modifiedSince)
+    def conversations(mailboxId, status, page=1, limit=0, modifiedSince)
       url = "/mailboxes/#{mailboxId}/conversations.json"
 
-      page = 1
       options = {}
 
       if limit < 0
@@ -592,7 +591,6 @@ module HelpScout
         items.each do |item|
           conversations << Conversation.new(item)
         end
-        page = page + 1
       rescue StandardError => e
         puts "List Conversations Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
