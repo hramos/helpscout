@@ -154,7 +154,7 @@ module HelpScout
       rescue SocketError => se
         raise StandardError, se.message
       end
-    
+
       if 200 <= response.code && response.code < 300
         envelope = CollectionsEnvelope.new(response)
         if envelope.items
@@ -175,7 +175,7 @@ module HelpScout
 
       items
     end
-    
+
 
     # Requests a collections of items from the Help Scout API. Should return 
     # the total count for this collection, or raise an error with an 
@@ -208,7 +208,7 @@ module HelpScout
       rescue SocketError => se
         raise StandardError, se.message
       end
-    
+
       if 200 <= response.code && response.code < 300
         envelope = CollectionsEnvelope.new(response)
         envelope.count
@@ -221,7 +221,7 @@ module HelpScout
         end
       else
         raise StandardError, "Server Response: #{response.code}"
-      end     
+      end
     end
 
 
@@ -264,7 +264,7 @@ module HelpScout
 
     def initialize(key=nil)
       Client.settings
-  
+
       if key.nil?
         key = @@settings["api_key"]
       end
@@ -409,7 +409,7 @@ module HelpScout
     # Response
     #  Name  Type
     #  item  Mailbox
-    
+
     def mailbox(mailboxId)
       url = "/mailboxes/#{mailboxId}.json"
       item = Client.request_item(@auth, url, nil)
@@ -492,7 +492,7 @@ module HelpScout
     #
     #  POST Parameters
     #  Name          Type          Required  Notes
-    #  conversation  Conversation  Yes       
+    #  conversation  Conversation  Yes       The body of the request.
     #  import        boolean       No        The import parameter enables 
     #                                        conversations to be created for 
     #                                        historical purposes (i.e. if moving
@@ -500,17 +500,26 @@ module HelpScout
     #                                        import your history). When import 
     #                                        is set to true, no outgoing emails 
     #                                        or notifications will be generated.
+    #  autoReply     boolean       No        The 'autoReply' request parameter
+    #                                        enables auto replies to be sent when
+    #                                        a conversation is created via the API.
     #  reload        boolean       No        Set this parameter to 'true' to 
     #                                        return the created conversation in 
     #                                        the response.
     #
 
-    def create_conversation(conversation)
+    def create_conversation(conversation, params = {})
       if !conversation
         raise StandardError.new("Missing Conversation")
       end
 
       url = "/conversations.json"
+
+      if params
+        query = ""
+        params.each { |k,v| query += "#{k}=#{v}&" }
+        url << "?" + query
+      end
 
       begin
         response = Client.create_item(@auth, url, conversation.to_json)
@@ -906,5 +915,5 @@ module HelpScout
         false
       end
     end
-  end  
+  end
 end
