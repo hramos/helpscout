@@ -3,15 +3,15 @@
 #
 # Authentication
 # This is an HTTPS-only API. Authentication will be based on API Keys, which can
-# be generated the Help Scout UI in the User Profile. Each API Key will map to 
-# an existing Help Scout user. Results returned from various responses will be 
+# be generated the Help Scout UI in the User Profile. Each API Key will map to
+# an existing Help Scout user. Results returned from various responses will be
 # based upon the role of the user to which the API key is tied.
 #
-# The API Key will be passed via HTTP Basic Authentication. The API Key will go 
+# The API Key will be passed via HTTP Basic Authentication. The API Key will go
 # in the username field and a dummy password, such as X, in the password field.
 #
 # Rate Limiting
-# Requests will be limited to 200 requests per minute. Response code 429 will 
+# Requests will be limited to 200 requests per minute. Response code 429 will
 # be returned when throttle limit has been reached. A "Retry-After" header will
 #  be returned indicating how many seconds to wait until retry.
 #
@@ -20,7 +20,7 @@
 # will only support JSON at this time.
 #
 # Usage
-# 1. Follow the instructions at Help Scout's Developers site to generate an API 
+# 1. Follow the instructions at Help Scout's Developers site to generate an API
 #    key: http://developer.helpscout.net/
 # 2. Add your API Key to config/helpscout.yml:
 #    api_key: XXXXXX
@@ -41,20 +41,20 @@ module HelpScout
   class Client
     include HTTParty
 
-    # All API requests will be made to: https://api.helpscout.net/. All 
+    # All API requests will be made to: https://api.helpscout.net/. All
     # requests are served over HTTPS. The current version is v1.
     base_uri 'https://api.helpscout.net/v1'
 
     @@settings ||= nil
 
     # Returns the current Help Scout Client settings.
-    # If no settings have been loaded yet, this function will load its 
+    # If no settings have been loaded yet, this function will load its
     # configuration from helpscout.yml
-    # 
+    #
     # Settings
-    # api_key  String  Help Scout API Key. The API is currently available for 
+    # api_key  String  Help Scout API Key. The API is currently available for
     #                  paying Help Scout accounts (Basic or Standard plan). You
-    #                  can generate a key from your User Profile, on the API 
+    #                  can generate a key from your User Profile, on the API
     #                  Keys tab.
 
     def self.settings
@@ -68,17 +68,17 @@ module HelpScout
     end
 
 
-    # Requests a single item from the Help Scout API. Should return either an 
-    # item from the SingleItemEnvelope, or raise an error with an 
+    # Requests a single item from the Help Scout API. Should return either an
+    # item from the SingleItemEnvelope, or raise an error with an
     # ErrorEnvelope.
     #
     # url     String  A string representing the url for the REST endpoint to be
     #                 queried.
-    # params  Hash    A hash of GET parameters to use for this particular 
+    # params  Hash    A hash of GET parameters to use for this particular
     #                 request.
     #
     # Response
-    #           Name    Type   Notes     
+    #           Name    Type   Notes
     #  Header   Status  Int    200
     #  Body     item
 
@@ -119,19 +119,19 @@ module HelpScout
     end
 
 
-    # Requests a collections of items from the Help Scout API. Should return 
-    # either an array of items from the CollectionsEnvelope, or raise an error 
+    # Requests a collections of items from the Help Scout API. Should return
+    # either an array of items from the CollectionsEnvelope, or raise an error
     # with an ErrorEnvelope.
-    # 
+    #
     # Collections return a maximum of 50 records per page.
     #
-    # url     String  A string representing the url for the REST endpoint to be 
+    # url     String  A string representing the url for the REST endpoint to be
     #                 queried.
-    # params  Hash    A hash of GET parameters to use for this particular 
+    # params  Hash    A hash of GET parameters to use for this particular
     #                 request.
     #
     # Response
-    #           Name    Type   Notes     
+    #           Name    Type   Notes
     #  Header   Status  Int    200
     #  Body     page    Int    Current page that was passed in on the request
     #           pages   Int    Total number of pages available
@@ -154,7 +154,7 @@ module HelpScout
       rescue SocketError => se
         raise StandardError, se.message
       end
-    
+
       if 200 <= response.code && response.code < 300
         envelope = CollectionsEnvelope.new(response)
         if envelope.items
@@ -175,15 +175,15 @@ module HelpScout
 
       items
     end
-    
 
-    # Requests a collections of items from the Help Scout API. Should return 
-    # the total count for this collection, or raise an error with an 
+
+    # Requests a collections of items from the Help Scout API. Should return
+    # the total count for this collection, or raise an error with an
     # ErrorEnvelope.
-    # 
-    # url     String  A string representing the url for the REST endpoint to be 
+    #
+    # url     String  A string representing the url for the REST endpoint to be
     #                 queried.
-    # params  Hash    A hash of GET parameters to use for this particular 
+    # params  Hash    A hash of GET parameters to use for this particular
     #                 request.
     #
     # Response
@@ -208,7 +208,7 @@ module HelpScout
       rescue SocketError => se
         raise StandardError, se.message
       end
-    
+
       if 200 <= response.code && response.code < 300
         envelope = CollectionsEnvelope.new(response)
         envelope.count
@@ -221,14 +221,14 @@ module HelpScout
         end
       else
         raise StandardError, "Server Response: #{response.code}"
-      end     
+      end
     end
 
 
     # Sends a POST request to create a single item from the Help Scout API.
     #
     # url     String  A string representing the url to POST.
-    # params  Hash    A hash of POST parameters to use for this particular 
+    # params  Hash    A hash of POST parameters to use for this particular
     #                 request.
     #
     # Response
@@ -255,8 +255,8 @@ module HelpScout
 
 
     # HelpScout::Client.new
-    # 
-    # Initializes the Help Scout Client. Once called, you may use any of the 
+    #
+    # Initializes the Help Scout Client. Once called, you may use any of the
     # HelpScout::Client methods to query the Help Scout API.
     #
     # key  String  Help Scout API Key. Optional. If not passed, the key will be
@@ -264,12 +264,12 @@ module HelpScout
 
     def initialize(key=nil)
       Client.settings
-  
+
       if key.nil?
         key = @@settings["api_key"]
       end
 
-      # The Help Scout API uses Basic Auth, where username is your API Key. 
+      # The Help Scout API uses Basic Auth, where username is your API Key.
       # Password can be any arbitrary non-zero-length string.
       @auth = { :username => key, :password => "X" }
     end
@@ -282,7 +282,7 @@ module HelpScout
     #
     # userId  Int  id of the User being requested
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/conversations/{conversationId}.json
     #
@@ -310,13 +310,13 @@ module HelpScout
     #
     # Fetches all users
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/users.json
     #
     #  Parameters:
     #   Name  Type  Required  Default  Notes
-    #   page  Int   No        1 
+    #   page  Int   No        1
     #
     # Response
     #  Name   Type
@@ -340,13 +340,13 @@ module HelpScout
     #
     # mailboxId  Int  id of the Mailbox being requested
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/mailboxes/{id}/users.json
     #
     #  Parameters:
     #   Name  Type  Required  Default  Notes
-    #   page  Int   No        1 
+    #   page  Int   No        1
     #
     # Response
     #  Name   Type
@@ -368,13 +368,13 @@ module HelpScout
     #
     # Fetches all mailboxes
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/mailboxes.json
     #
     #  Parameters:
     #   Name  Type  Required  Default  Notes
-    #   page  Int   No        1 
+    #   page  Int   No        1
     #
     # Response
     #  Name   Type
@@ -402,14 +402,14 @@ module HelpScout
     #
     # mailboxId  Int  id of the Mailbox being requested
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/mailboxes/{id}.json
     #
     # Response
     #  Name  Type
     #  item  Mailbox
-    
+
     def mailbox(mailboxId)
       url = "/mailboxes/#{mailboxId}.json"
       item = Client.request_item(@auth, url, nil)
@@ -428,13 +428,13 @@ module HelpScout
     #
     # mailboxId  Int  id of the Mailbox being requested
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/mailboxes/{id}/folders.json
     #
     #  Parameters:
     #   Name  Type  Required  Default  Notes
-    #   page  Int   No        1 
+    #   page  Int   No        1
     #
     # Response
     #  Name   Type
@@ -458,7 +458,7 @@ module HelpScout
     #
     # conversationId  Int  id of the Conversation being requested
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/conversations/{id}.json
     #
@@ -492,16 +492,16 @@ module HelpScout
     #
     #  POST Parameters
     #  Name          Type          Required  Notes
-    #  conversation  Conversation  Yes       
-    #  import        boolean       No        The import parameter enables 
-    #                                        conversations to be created for 
+    #  conversation  Conversation  Yes
+    #  import        boolean       No        The import parameter enables
+    #                                        conversations to be created for
     #                                        historical purposes (i.e. if moving
-    #                                        from a different platform, you can 
-    #                                        import your history). When import 
-    #                                        is set to true, no outgoing emails 
+    #                                        from a different platform, you can
+    #                                        import your history). When import
+    #                                        is set to true, no outgoing emails
     #                                        or notifications will be generated.
-    #  reload        boolean       No        Set this parameter to 'true' to 
-    #                                        return the created conversation in 
+    #  reload        boolean       No        Set this parameter to 'true' to
+    #                                        return the created conversation in
     #                                        the response.
     #
 
@@ -527,10 +527,10 @@ module HelpScout
     #
     # mailboxId      Int       id of the Mailbox being requested
     # status         String    Filter by conversation status
-    # limit          Int       This function will page through 
-    #                          CollectionsEnvelopes until all items are 
+    # limit          Int       This function will page through
+    #                          CollectionsEnvelopes until all items are
     #                          returned, unless a limit is specified.
-    # modifiedSince  DateTime  Returns conversations that have been modified 
+    # modifiedSince  DateTime  Returns conversations that have been modified
     #                          since the given date/time.
     #
     # Possible values for status include:
@@ -538,28 +538,28 @@ module HelpScout
     # * CONVERSATION_FILTER_STATUS_ACTIVE
     # * CONVERSATION_FILTER_STATUS_PENDING
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/mailboxes/{mailboxId}/conversations.json
     #
     #  Parameters:
     #   Name           Type      Required  Default  Notes
-    #   page           Int       No        1 
-    #   status         String    No        all      Active/Pending only applies 
-    #                                               to the following folders: 
+    #   page           Int       No        1
+    #   status         String    No        all      Active/Pending only applies
+    #                                               to the following folders:
     #                                               Unassigned
     #                                               My Tickets
     #                                               Drafts
     #                                               Assigned
-    #   modifiedSince  DateTime  No                 Returns conversations that 
+    #   modifiedSince  DateTime  No                 Returns conversations that
     #                                               have been modified since the
     #                                               given date/time.
     #
     # Response
     #  Name   Type
-    #  items  Array  Collection of Conversation objects. Conversation threads 
-    #                are not returned on this call. To get the conversation 
-    #                threads, you need to retrieve the full conversation object 
+    #  items  Array  Collection of Conversation objects. Conversation threads
+    #                are not returned on this call. To get the conversation
+    #                threads, you need to retrieve the full conversation object
     #                via the Get Conversation call.
 
     CONVERSATION_FILTER_STATUS_ACTIVE = "active"
@@ -604,7 +604,6 @@ module HelpScout
       conversations
     end
 
-
     # List Conversations in Folder
     # http://developer.helpscout.net/conversations/
     #
@@ -613,10 +612,10 @@ module HelpScout
     # mailboxId      Int       id of the Mailbox being requested
     # folderId       Int       id of the Folder being requested
     # status         String    Filter by conversation status
-    # limit          Int       This function will page through 
-    #                          CollectionsEnvelopes until all items are 
+    # limit          Int       This function will page through
+    #                          CollectionsEnvelopes until all items are
     #                          returned, unless a limit is specified.
-    # modifiedSince  DateTime  Returns conversations that have been modified 
+    # modifiedSince  DateTime  Returns conversations that have been modified
     #                          since the given date/time.
     #
     # Possible values for status include:
@@ -624,32 +623,44 @@ module HelpScout
     # * CONVERSATION_FILTER_STATUS_ACTIVE
     # * CONVERSATION_FILTER_STATUS_PENDING
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/mailboxes/{mailboxId}/folders/{folderId}/conversations.json
     #
     #  Parameters:
     #   Name           Type      Required  Default  Notes
-    #   page           Int       No        1 
-    #   status         String    No        all      Active/Pending only applies 
-    #                                               to the following folders: 
+    #   page           Int       No        1
+    #   status         String    No        all      Active/Pending only applies
+    #                                               to the following folders:
     #                                               Unassigned
     #                                               My Tickets
     #                                               Drafts
     #                                               Assigned
-    #   modifiedSince  DateTime  No                 Returns conversations that 
+    #   modifiedSince  DateTime  No                 Returns conversations that
     #                                               have been modified since the
     #                                               given date/time.
     #
     # Response
     #  Name   Type
-    #  items  Array  Collection of Conversation objects. Conversation threads 
-    #                are not returned on this call. To get the conversation 
-    #                threads, you need to retrieve the full conversation object 
+    #  items  Array  Collection of Conversation objects. Conversation threads
+    #                are not returned on this call. To get the conversation
+    #                threads, you need to retrieve the full conversation object
     #                via the Get Conversation call.
+    def conversations_in_folder(mailboxId, folderId, status = nil, limit=0, modifiedSince=nil)
+      conversations_for(mailboxId, "folders", folderId, status, limit, modifiedSince)
+    end
 
-    def conversations_in_folder(mailboxId, folderId, status, limit=0, modifiedSince)
-      url = "/mailboxes/#{mailboxId}/folders/#{folderId}/conversations.json"
+    #
+    # List conversations for a customer
+    #
+    # See conversations_in_folder for options
+    #
+    def conversations_for_customer(mailboxId, customerId, status=nil, limit=0, modifiedSince=nil)
+      conversations_for(mailboxId, "customers", customerId, status, limit, modifiedSince)
+    end
+
+    def conversations_for(mailboxId, type, id, status=nil, limit=0, modifiedSince=nil)
+      url = "/mailboxes/#{mailboxId}/#{type}/#{id}/conversations.json"
 
       page = 1
       options = {}
@@ -686,6 +697,8 @@ module HelpScout
       conversations
     end
 
+    private :conversations_for
+
 
     # Conversation Count
     # http://developer.helpscout.net/conversations/
@@ -701,20 +714,20 @@ module HelpScout
     # * CONVERSATION_FILTER_STATUS_ACTIVE
     # * CONVERSATION_FILTER_STATUS_PENDING
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/mailboxes/{mailboxId}/conversations.json
     #
     #  Parameters:
     #   Name           Type      Required  Default  Notes
-    #   page           Int       No        1 
-    #   status         String    No        all      Active/Pending only applies 
-    #                                               to the following folders: 
+    #   page           Int       No        1
+    #   status         String    No        all      Active/Pending only applies
+    #                                               to the following folders:
     #                                               Unassigned
     #                                               My Tickets
     #                                               Drafts
     #                                               Assigned
-    #   modifiedSince  DateTime  No                 Returns conversations that 
+    #   modifiedSince  DateTime  No                 Returns conversations that
     #                                               have been modified since the
     #                                               given date/time.
     #
@@ -754,7 +767,7 @@ module HelpScout
     #
     # attachmentId  Int  id of the Attachment being requested
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/attachments/{id}/data.json
     #
@@ -781,7 +794,7 @@ module HelpScout
     #
     # customerId  Int  id of the Customer being requested
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/customers/{id}.json
     #
@@ -807,9 +820,9 @@ module HelpScout
     # Customers can be filtered on any combination of first name, last name, and
     # email.
     #
-    # Customers are returned by createdAt date, from newest to oldest.    
+    # Customers are returned by createdAt date, from newest to oldest.
     #
-    # Request 
+    # Request
     #  REST Method: GET
     #  URL: https://api.helpscout.net/v1/customers.json
     #
@@ -883,8 +896,8 @@ module HelpScout
     #
     #  POST Parameters
     #  Name      Type      Required  Notes
-    #  customer  Customer  Yes       The body of the request       
-    #  reload    boolean   No        Set to true to return the customer in the 
+    #  customer  Customer  Yes       The body of the request
+    #  reload    boolean   No        Set to true to return the customer in the
     #                                response.
     # Response
     #  Response   Name      Type    Notes
@@ -906,5 +919,5 @@ module HelpScout
         false
       end
     end
-  end  
+  end
 end
