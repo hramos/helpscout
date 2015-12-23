@@ -825,8 +825,8 @@ module HelpScout
     #  Name   Type
     #  items  Array  Collection of Customer objects.
 
-    def customers(limit=0, firstName=nil, lastName=nil, email=nil)
-      url = "/customers.json"
+    def customers(limit=0, firstName=nil, lastName=nil, email=nil, mailboxId=nil)
+      url = mailboxId.nil? ? "/customers.json" : "/mailboxes/#{mailboxId}/customers.json"
 
       page = 1
       options = {}
@@ -865,6 +865,11 @@ module HelpScout
       end
 
       customers
+    end
+
+    # Helper method to find customers by mailbox
+    def customers_by_mailbox(mailboxId)
+      customers(0, nil, nil, nil, mailboxId)
     end
 
     # Helper method to find customers by email
