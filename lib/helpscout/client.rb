@@ -520,6 +520,41 @@ module HelpScout
     end
 
 
+    # Create Conversation Thread
+    # http://developer.helpscout.net/help-desk-api/conversations/create-thread/
+    #
+    # Creates a new Conversation Thread.
+    #
+    # Request
+    #  REST Method: POST
+    #  URL: https://api.helpscout.net/v1/conversations/{id}.json
+    #
+    #  POST Parameters
+    #  Name          Type          Required  Notes
+    #  thread        ConversationThread  Yes
+    #  imported      boolean       No        The import parameter enables
+    #                                        conversations to be created for
+    #                                        historical purposes (i.e. if moving
+    #                                        from a different platform, you can
+    #                                        import your history). When import
+    #                                        is set to true, no outgoing emails
+    #                                        or notifications will be generated.
+    #  reload        boolean       No        Set this parameter to 'true' to
+    #                                        return the created conversation in
+    #                                        the response.
+    #
+
+    def create_conversation_thread(conversationId, thread)
+      url = "/conversations/#{conversationId}.json"
+
+      begin
+        response = Client.create_item(@auth, url, thread.to_json)
+      rescue StandardError => e
+        puts "Could not create conversation thread: #{e.message}"
+      end
+    end
+
+
     # List Conversations
     # http://developer.helpscout.net/conversations/list/
     #
