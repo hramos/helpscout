@@ -721,6 +721,86 @@ module HelpScout
       conversations
     end
 
+    # List Conversations for a Customer
+    # http://developer.helpscout.net/help-desk-api/conversations/list/
+    #
+    # Return conversations for a specific customer in a mailbox.
+    #
+    # mailboxId      Int       id of the Mailbox being requested
+    # customerId     Int       id of the Customer being requested
+    # status         String    Filter by conversation status
+    # limit          Int       This function will page through
+    #                          CollectionsEnvelopes until all items are
+    #                          returned, unless a limit is specified.
+    # modifiedSince  DateTime  Returns conversations that have been modified
+    #                          since the given date/time.
+    #
+    # Possible values for status include:
+    # * CONVERSATION_FILTER_STATUS_ALL      (Default)
+    # * CONVERSATION_FILTER_STATUS_ACTIVE
+    # * CONVERSATION_FILTER_STATUS_PENDING
+    #
+    # Request
+    #  REST Method: GET
+    #  URL: https://api.helpscout.net/v1/mailboxes/{mailboxId}/customers/{customerId}/conversations.json
+    #
+    #  Parameters:
+    #   Name           Type      Required  Default  Notes
+    #   page           Int       No        1
+    #   status         String    No        all      Active/Pending only applies
+    #                                               to the following folders:
+    #                                               Unassigned
+    #                                               My Tickets
+    #                                               Drafts
+    #                                               Assigned
+    #   modifiedSince  DateTime  No                 Returns conversations that
+    #                                               have been modified since the
+    #                                               given date/time.
+    #
+    # Response
+    #  Name   Type
+    #  items  Array  Collection of Conversation objects. Conversation threads
+    #                are not returned on this call. To get the conversation
+    #                threads, you need to retrieve the full conversation object
+    #                via the Get Conversation call.
+
+    def conversations_for_customer(mailboxId, customerId, status, limit=0, modifiedSince)
+      url = "/mailboxes/#{mailboxId}/customers/#{customerId}/conversations.json"
+
+      page = 1
+      options = {}
+
+      if limit < 0
+        limit = 0
+      end
+
+      if status && (status == CONVERSATION_FILTER_STATUS_ACTIVE || status == CONVERSATION_FILTER_STATUS_ALL || status == CONVERSATION_FILTER_STATUS_PENDING)
+        options["status"] = status
+      end
+
+      if modifiedSince
+        options["modifiedSince"] = modifiedSince
+      end
+
+      conversations = []
+
+      begin
+        options["page"] = page
+        items = Client.request_items(@auth, url, options)
+        items.each do |item|
+          conversations << Conversation.new(item)
+        end
+        page = page + 1
+      rescue StandardError => e
+        puts "List Conversations For Customer Request failed: #{e.message}"
+      end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
+
+      if limit > 0 && conversations.count > limit
+        conversations = conversations[0..limit-1]
+      end
+
+      conversations
+    end
 
     # Conversation Count
     # http://developer.helpscout.net/conversations/
