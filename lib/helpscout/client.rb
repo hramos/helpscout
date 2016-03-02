@@ -139,8 +139,6 @@ module HelpScout
     #           items   Array  Collection of objects
 
     def self.request_items(auth, url, params = {})
-      items = []
-
       request_url = ""
       request_url << url
       if params
@@ -157,11 +155,6 @@ module HelpScout
 
       if 200 <= response.code && response.code < 300
         envelope = CollectionsEnvelope.new(response)
-        if envelope.items
-          envelope.items.each do |item|
-            items << item
-          end
-        end
       elsif 400 <= response.code && response.code < 500
         if response["message"]
           envelope = ErrorEnvelope.new(response)
@@ -173,7 +166,7 @@ module HelpScout
         raise StandardError, "Server Response: #{response.code}"
       end
 
-      items
+      envelope.items || []
     end
 
 
@@ -910,6 +903,33 @@ module HelpScout
         puts "Could not create customer: #{e.message}"
         false
       end
+    end
+
+    def ratings(start_time, end_time, rating)
+      url = "/reports/happiness/ratings.json"
+
+      page = 1
+      options = {}
+
+      options["start"] = start_time
+      options["end"] = end_time
+      options["rating"] = rating
+
+
+      ratings = []
+
+      begin
+        options["page"] = page
+        items = Client.request_items(@auth, url, options)
+        items.each do |item|
+          ratings << Rating.new(item)
+        end
+        page = page + 1
+      rescue StandardError => e
+        puts "Request failed: #{e.message}"
+      end while items && items.count > 0
+
+      ratings
     end
   end
 end
