@@ -538,7 +538,8 @@ module HelpScout
   # * GENDER_UNKNOWN
 
   class Customer
-    attr_reader :id, :firstName, :lastName, :photoUrl, :photoType, :gender, :age, :organization, :jobTitle, :location, :createdAt, :modifiedAt, :background, :address, :socialProfiles, :emails, :phones, :chats, :websites
+    attr_reader :id, :createdAt, :modifiedAt
+    attr_accessor :firstName, :lastName, :photoUrl, :photoType, :gender, :age, :organization, :jobTitle, :location, :background, :address, :socialProfiles, :emails, :phones, :chats, :websites
 
     PHOTO_TYPE_UNKNOWN = "unknown"
     PHOTO_TYPE_GRAVATAR = "gravatar"

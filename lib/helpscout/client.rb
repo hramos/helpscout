@@ -254,6 +254,31 @@ module HelpScout
     end
 
 
+    # Sends a PUT request to update a single item from the Help Scout API.
+    #
+    # url     String  A string representing the url to PUT.
+    # params  Hash    A hash of PUT parameters to use for this particular
+    #                 request.
+    #
+    # Response
+    #  Name      Type    Notes
+    #  Location  String  https://api.helpscout.net/v1/customers/{id}.json
+
+    def self.update_item(auth, url, params = {})
+      begin
+        response = Client.put(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+      rescue SocketError => se
+        raise StandardError, se.message
+      end
+
+      if response.code == 200
+        true
+      else
+        raise StandardError.new("Server Response: #{response.code} #{response.message}")
+      end
+    end
+
+
     # HelpScout::Client.new
     #
     # Initializes the Help Scout Client. Once called, you may use any of the
@@ -1026,5 +1051,40 @@ module HelpScout
         false
       end
     end
+
+    # Update Customer
+    # http://developer.helpscout.net/customers/
+    #
+    # Updates a Customer.
+    #
+    # Request
+    #  REST Method: PUT
+    #  URL: https://api.helpscout.net/v1/customers/{id}.json
+    #
+    #  PUT Parameters
+    #  Name      Type      Required  Notes
+    #  customer  Customer  Yes       The body of the request
+    #  reload    boolean   No        Set to true to return the customer in the
+    #                                response.
+    # Response
+    #  Response   Name      Type    Notes
+    #  Header     Status    Integer 201
+    #  Header     Location  String  https://api.helpscout.net/v1/customer/{id}.json
+
+    def update_customer(customer)
+      if !customer || !customer.id
+        raise StandardError.new("Missing Customer")
+      end
+
+      url = "/customers/#{customer.id}.json"
+
+      begin
+        Client.update_item(@auth, url, customer.to_json)
+      rescue StandardError => e
+        puts "Could not update customer: #{e.message}"
+        false
+      end
+    end
+
   end
 end
