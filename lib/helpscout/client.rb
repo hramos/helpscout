@@ -1044,8 +1044,7 @@ module HelpScout
       url = "/customers.json"
 
       begin
-        item = Client.create_item(@auth, url, customer.to_json)
-        Customer.new(item)
+        Client.create_item(@auth, url, customer.to_json)
       rescue StandardError => e
         puts "Could not create customer: #{e.message}"
         false
