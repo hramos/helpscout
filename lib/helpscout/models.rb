@@ -193,7 +193,7 @@ module HelpScout
       @subject = object["subject"]
       @preview = object["preview"]
       @closedBy = Person.new(object["closedBy"]) if object["closedBy"]
-      @createdBy = Person.new(object["person"]) if object["person"]
+      @createdBy = Person.new(object["createdBy"]) if object["createdBy"]
       @source = Source.new(object["source"]) if object["source"]
       @cc = object["cc"]
       @bcc = object["bcc"]
