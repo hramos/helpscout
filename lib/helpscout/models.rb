@@ -236,6 +236,8 @@ module HelpScout
     #                                               Source object for
     #                                               clarification.
     #  source       Source
+    #  actionType   String    merged                Describes an optional action
+    #                                               associated with the line item.
     #  fromMailbox  Mailbox                         If the conversation was
     #                                               moved, fromMailbox
     #                                               represents the Mailbox from
@@ -299,7 +301,7 @@ module HelpScout
     #   conversation.
 
     class Thread
-      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :source, :fromMailbox, :type, :state, :customer, :body, :to, :cc, :bcc, :attachments
+      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :source, :actionType, :fromMailbox, :type, :state, :customer, :body, :to, :cc, :bcc, :attachments
 
       STATE_PUBLISHED = "published"
       STATE_DRAFT = "draft"
@@ -327,6 +329,7 @@ module HelpScout
         @createdBy = Person.new(object["createdBy"]) if object["createdBy"]
         @status = object["status"]
         @source = Source.new(object["source"]) if object["source"]
+        @actionType = object["actionType"]
         @fromMailbox = Mailbox.new(object["fromMailbox"]) if object["fromMailbox"]
         @type = object["type"]
         @state = object["state"]
