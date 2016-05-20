@@ -408,14 +408,12 @@ module HelpScout
     def mailboxes
       url = "/mailboxes.json"
       mailboxes = []
-      begin
-        items = Client.request_items(@auth, url, {})
-        items.each do |item|
-          mailboxes << Mailbox.new(item)
-        end
-      rescue StandardError => e
-        puts "List Mailbox Request failed: #{e.message}"
+
+      items = Client.request_items(@auth, url, {})
+      items.each do |item|
+        mailboxes << Mailbox.new(item)
       end
+
       mailboxes
     end
 
@@ -494,14 +492,10 @@ module HelpScout
     def conversation(conversationId)
       url = "/conversations/#{conversationId}.json"
 
-      begin
-        item = Client.request_item(@auth, url, nil)
-        conversation = nil
-        if item
-          conversation = Conversation.new(item)
-        end
-      rescue StandardError => e
-        puts "Could not fetch conversation with id #{conversationId}: #{e.message}"
+      item = Client.request_item(@auth, url, nil)
+      conversation = nil
+      if item
+        conversation = Conversation.new(item)
       end
     end
 
@@ -537,11 +531,7 @@ module HelpScout
 
       url = "/conversations.json"
 
-      begin
-        response = Client.create_item(@auth, url, conversation.to_json)
-      rescue StandardError => e
-        puts "Could not create conversation: #{e.message}"
-      end
+      Client.create_item(@auth, url, conversation.to_json)
     end
 
 
@@ -572,11 +562,7 @@ module HelpScout
     def create_conversation_thread(conversationId, thread)
       url = "/conversations/#{conversationId}.json"
 
-      begin
-        response = Client.create_item(@auth, url, thread.to_json)
-      rescue StandardError => e
-        puts "Could not create conversation thread: #{e.message}"
-      end
+      Client.create_item(@auth, url, thread.to_json)
     end
 
 
@@ -653,8 +639,6 @@ module HelpScout
           conversations << Conversation.new(item)
         end
         page = page + 1
-      rescue StandardError => e
-        puts "List Conversations Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
 
       if limit > 0 && conversations.count > limit
@@ -735,8 +719,6 @@ module HelpScout
           conversations << Conversation.new(item)
         end
         page = page + 1
-      rescue StandardError => e
-        puts "List Conversations In Folder Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
 
       if limit > 0 && conversations.count > limit
@@ -816,8 +798,6 @@ module HelpScout
           conversations << Conversation.new(item)
         end
         page = page + 1
-      rescue StandardError => e
-        puts "List Conversations For Customer Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
 
       if limit > 0 && conversations.count > limit
@@ -878,12 +858,8 @@ module HelpScout
 
       conversations = []
 
-      begin
-        options["page"] = page
-        count = Client.request_count(@auth, url, options)
-      rescue StandardError => e
-        puts "Conversation Count Request failed: #{e.message}"
-      end
+      options["page"] = page
+      count = Client.request_count(@auth, url, options)
     end
 
 
@@ -996,8 +972,6 @@ module HelpScout
           customers << Customer.new(item)
         end
         page = page + 1
-      rescue StandardError => e
-        puts "Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || customers.count < limit)
 
       if limit > 0 && customers.count > limit
@@ -1043,12 +1017,7 @@ module HelpScout
 
       url = "/customers.json"
 
-      begin
-        Client.create_item(@auth, url, customer.to_json)
-      rescue StandardError => e
-        puts "Could not create customer: #{e.message}"
-        false
-      end
+      Client.create_item(@auth, url, customer.to_json)
     end
 
     # Update Customer
@@ -1077,12 +1046,7 @@ module HelpScout
 
       url = "/customers/#{customer.id}.json"
 
-      begin
-        Client.update_item(@auth, url, customer.to_json)
-      rescue StandardError => e
-        puts "Could not update customer: #{e.message}"
-        false
-      end
+      Client.update_item(@auth, url, customer.to_json)
     end
 
   end
