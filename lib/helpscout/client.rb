@@ -254,6 +254,31 @@ module HelpScout
     end
 
 
+    # Sends a PUT request to update a single item from the Help Scout API.
+    #
+    # url     String  A string representing the url to PUT.
+    # params  Hash    A hash of PUT parameters to use for this particular
+    #                 request.
+    #
+    # Response
+    #  Name      Type    Notes
+    #  Location  String  https://api.helpscout.net/v1/customers/{id}.json
+
+    def self.update_item(auth, url, params = {})
+      begin
+        response = Client.put(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+      rescue SocketError => se
+        raise StandardError, se.message
+      end
+
+      if response.code == 200
+        true
+      else
+        raise StandardError.new("Server Response: #{response.code} #{response.message}")
+      end
+    end
+
+
     # HelpScout::Client.new
     #
     # Initializes the Help Scout Client. Once called, you may use any of the
@@ -383,14 +408,12 @@ module HelpScout
     def mailboxes
       url = "/mailboxes.json"
       mailboxes = []
-      begin
-        items = Client.request_items(@auth, url, {})
-        items.each do |item|
-          mailboxes << Mailbox.new(item)
-        end
-      rescue StandardError => e
-        puts "List Mailbox Request failed: #{e.message}"
+
+      items = Client.request_items(@auth, url, {})
+      items.each do |item|
+        mailboxes << Mailbox.new(item)
       end
+
       mailboxes
     end
 
@@ -469,14 +492,10 @@ module HelpScout
     def conversation(conversationId)
       url = "/conversations/#{conversationId}.json"
 
-      begin
-        item = Client.request_item(@auth, url, nil)
-        conversation = nil
-        if item
-          conversation = Conversation.new(item)
-        end
-      rescue StandardError => e
-        puts "Could not fetch conversation with id #{conversationId}: #{e.message}"
+      item = Client.request_item(@auth, url, nil)
+      conversation = nil
+      if item
+        conversation = Conversation.new(item)
       end
     end
 
@@ -512,11 +531,38 @@ module HelpScout
 
       url = "/conversations.json"
 
-      begin
-        response = Client.create_item(@auth, url, conversation.to_json)
-      rescue StandardError => e
-        puts "Could not create conversation: #{e.message}"
-      end
+      Client.create_item(@auth, url, conversation.to_json)
+    end
+
+
+    # Create Conversation Thread
+    # http://developer.helpscout.net/help-desk-api/conversations/create-thread/
+    #
+    # Creates a new Conversation Thread.
+    #
+    # Request
+    #  REST Method: POST
+    #  URL: https://api.helpscout.net/v1/conversations/{id}.json
+    #
+    #  POST Parameters
+    #  Name          Type          Required  Notes
+    #  thread        ConversationThread  Yes
+    #  imported      boolean       No        The import parameter enables
+    #                                        conversations to be created for
+    #                                        historical purposes (i.e. if moving
+    #                                        from a different platform, you can
+    #                                        import your history). When import
+    #                                        is set to true, no outgoing emails
+    #                                        or notifications will be generated.
+    #  reload        boolean       No        Set this parameter to 'true' to
+    #                                        return the created conversation in
+    #                                        the response.
+    #
+
+    def create_conversation_thread(conversationId, thread)
+      url = "/conversations/#{conversationId}.json"
+
+      Client.create_item(@auth, url, thread.to_json)
     end
 
 
@@ -593,8 +639,6 @@ module HelpScout
           conversations << Conversation.new(item)
         end
         page = page + 1
-      rescue StandardError => e
-        puts "List Conversations Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
 
       if limit > 0 && conversations.count > limit
@@ -675,8 +719,6 @@ module HelpScout
           conversations << Conversation.new(item)
         end
         page = page + 1
-      rescue StandardError => e
-        puts "List Conversations In Folder Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
 
       if limit > 0 && conversations.count > limit
@@ -686,6 +728,84 @@ module HelpScout
       conversations
     end
 
+    # List Conversations for a Customer
+    # http://developer.helpscout.net/help-desk-api/conversations/list/
+    #
+    # Return conversations for a specific customer in a mailbox.
+    #
+    # mailboxId      Int       id of the Mailbox being requested
+    # customerId     Int       id of the Customer being requested
+    # status         String    Filter by conversation status
+    # limit          Int       This function will page through
+    #                          CollectionsEnvelopes until all items are
+    #                          returned, unless a limit is specified.
+    # modifiedSince  DateTime  Returns conversations that have been modified
+    #                          since the given date/time.
+    #
+    # Possible values for status include:
+    # * CONVERSATION_FILTER_STATUS_ALL      (Default)
+    # * CONVERSATION_FILTER_STATUS_ACTIVE
+    # * CONVERSATION_FILTER_STATUS_PENDING
+    #
+    # Request
+    #  REST Method: GET
+    #  URL: https://api.helpscout.net/v1/mailboxes/{mailboxId}/customers/{customerId}/conversations.json
+    #
+    #  Parameters:
+    #   Name           Type      Required  Default  Notes
+    #   page           Int       No        1
+    #   status         String    No        all      Active/Pending only applies
+    #                                               to the following folders:
+    #                                               Unassigned
+    #                                               My Tickets
+    #                                               Drafts
+    #                                               Assigned
+    #   modifiedSince  DateTime  No                 Returns conversations that
+    #                                               have been modified since the
+    #                                               given date/time.
+    #
+    # Response
+    #  Name   Type
+    #  items  Array  Collection of Conversation objects. Conversation threads
+    #                are not returned on this call. To get the conversation
+    #                threads, you need to retrieve the full conversation object
+    #                via the Get Conversation call.
+
+    def conversations_for_customer(mailboxId, customerId, status, limit=0, modifiedSince)
+      url = "/mailboxes/#{mailboxId}/customers/#{customerId}/conversations.json"
+
+      page = 1
+      options = {}
+
+      if limit < 0
+        limit = 0
+      end
+
+      if status && (status == CONVERSATION_FILTER_STATUS_ACTIVE || status == CONVERSATION_FILTER_STATUS_ALL || status == CONVERSATION_FILTER_STATUS_PENDING)
+        options["status"] = status
+      end
+
+      if modifiedSince
+        options["modifiedSince"] = modifiedSince
+      end
+
+      conversations = []
+
+      begin
+        options["page"] = page
+        items = Client.request_items(@auth, url, options)
+        items.each do |item|
+          conversations << Conversation.new(item)
+        end
+        page = page + 1
+      end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
+
+      if limit > 0 && conversations.count > limit
+        conversations = conversations[0..limit-1]
+      end
+
+      conversations
+    end
 
     # Conversation Count
     # http://developer.helpscout.net/conversations/
@@ -738,12 +858,8 @@ module HelpScout
 
       conversations = []
 
-      begin
-        options["page"] = page
-        count = Client.request_count(@auth, url, options)
-      rescue StandardError => e
-        puts "Conversation Count Request failed: #{e.message}"
-      end
+      options["page"] = page
+      count = Client.request_count(@auth, url, options)
     end
 
 
@@ -856,8 +972,6 @@ module HelpScout
           customers << Customer.new(item)
         end
         page = page + 1
-      rescue StandardError => e
-        puts "Request failed: #{e.message}"
       end while items && items.count > 0 && (limit == 0 || customers.count < limit)
 
       if limit > 0 && customers.count > limit
@@ -903,13 +1017,37 @@ module HelpScout
 
       url = "/customers.json"
 
-      begin
-        item = Client.create_item(@auth, url, customer.to_json)
-        Customer.new(item)
-      rescue StandardError => e
-        puts "Could not create customer: #{e.message}"
-        false
-      end
+      Client.create_item(@auth, url, customer.to_json)
     end
+
+    # Update Customer
+    # http://developer.helpscout.net/customers/
+    #
+    # Updates a Customer.
+    #
+    # Request
+    #  REST Method: PUT
+    #  URL: https://api.helpscout.net/v1/customers/{id}.json
+    #
+    #  PUT Parameters
+    #  Name      Type      Required  Notes
+    #  customer  Customer  Yes       The body of the request
+    #  reload    boolean   No        Set to true to return the customer in the
+    #                                response.
+    # Response
+    #  Response   Name      Type    Notes
+    #  Header     Status    Integer 201
+    #  Header     Location  String  https://api.helpscout.net/v1/customer/{id}.json
+
+    def update_customer(customer)
+      if !customer || !customer.id
+        raise StandardError.new("Missing Customer")
+      end
+
+      url = "/customers/#{customer.id}.json"
+
+      Client.update_item(@auth, url, customer.to_json)
+    end
+
   end
 end
