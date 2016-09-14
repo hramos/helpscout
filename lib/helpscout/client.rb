@@ -896,12 +896,10 @@ module HelpScout
       end
 
       url = "/customers.json"
-
-      begin
-        item = Client.create_item(@auth, url, customer.to_json)
+      
+      item = Client.create_item(@auth, url, customer.to_json)
+      if item
         Customer.new(item)
-        puts "Could not create customer: #{e.message}"
-        false
       end
     end
   end
