@@ -13,9 +13,9 @@ module HelpScout
   # Response Envelopes
   # http://developer.helpscout.net/
   #
-  # The Help Scout API will return one of three envelopes, depending upon the 
+  # The Help Scout API will return one of three envelopes, depending upon the
   # request issued.
-  
+
   # Single Item Envelope
   class SingleItemEnvelope
     attr_reader :item
@@ -29,7 +29,7 @@ module HelpScout
   # Collections Envelope
   class CollectionsEnvelope
     attr_reader :page, :pages, :count, :items
-    
+
     # Creates a new CollectionsEnvelope object from a Hash of attributes
     def initialize(object)
       @page = object["page"]
@@ -47,7 +47,7 @@ module HelpScout
     def initialize(object)
       @status = object["status"]
       @message = object["message"]
-    end    
+    end
   end
 
 
@@ -57,7 +57,7 @@ module HelpScout
   # http://developer.helpscout.net/objects/mailbox/
   # http://developer.helpscout.net/objects/mailbox/mailbox-ref/
   #
-  # MailboxRefs are a subset of a full Mailbox object, and only include the 
+  # MailboxRefs are a subset of a full Mailbox object, and only include the
   # attributes marked with a *.
   #
   # MailboxRefs are returned by endpoints that include multiple mailboxes.
@@ -66,12 +66,12 @@ module HelpScout
   #  Name       Type      Example               Notes
   # *id         Int       1234                  Unique identifier
   # *name       String    Feedback              Name of the Mailbox
-  #  slug       String    47204a026903ce6d      Key used to represent this 
+  #  slug       String    47204a026903ce6d      Key used to represent this
   #                                             Mailbox
   #  email      String    feedback@parse.com    Email address
-  #  createdAt  DateTime  2012-07-23T12:34:12Z  UTC time when this mailbox was 
+  #  createdAt  DateTime  2012-07-23T12:34:12Z  UTC time when this mailbox was
   #                                             created.
-  #  modifiedAt DateTime  2012-07-24T20:18:33Z  UTC time when this mailbox was 
+  #  modifiedAt DateTime  2012-07-24T20:18:33Z  UTC time when this mailbox was
   #                                             modified.
 
   class Mailbox
@@ -84,7 +84,7 @@ module HelpScout
 
       @id = object["id"]
       @name = object["name"]
-      
+
       @slug = object["slug"]
       @email = object["email"]
 
@@ -93,7 +93,7 @@ module HelpScout
         object["folders"].each do |folder|
           @folders << Folder.new(folder)
         end
-      end      
+      end
     end
   end
 
@@ -103,54 +103,54 @@ module HelpScout
   #
   #  Name         Type        Example               Notes
   #  id           Int         2391938111            Unique identifier
-  #  folderId     Int         1234                  ID of the Folder to which 
+  #  folderId     Int         1234                  ID of the Folder to which
   #                                                 this conversation resides.
   #  isDraft      Boolean     false                 Is this a draft?
-  #  number       Int         349                   The conversation number 
+  #  number       Int         349                   The conversation number
   #                                                 displayed in the UI.
-  #  owner        Person                            User of the Help Scout user 
-  #                                                 that is currently assigned 
+  #  owner        Person                            User of the Help Scout user
+  #                                                 that is currently assigned
   #                                                 to this conversation
-  #  mailbox      Mailbox                           Mailbox to which this 
+  #  mailbox      Mailbox                           Mailbox to which this
   #                                                 conversation belongs.
-  #  customer     Person                            Customer to which this 
+  #  customer     Person                            Customer to which this
   #                                                 conversation belongs.
-  #  threadCount  Int         4                     This count represents the 
-  #                                                 number of published threads 
-  #                                                 found on the conversation 
-  #                                                 (it does not include line 
-  #                                                 items, drafts or threads 
-  #                                                 held for review by Traffic 
+  #  threadCount  Int         4                     This count represents the
+  #                                                 number of published threads
+  #                                                 found on the conversation
+  #                                                 (it does not include line
+  #                                                 items, drafts or threads
+  #                                                 held for review by Traffic
   #                                                 Cop).
   #  status       String      active                Status of the conversation.
-  #  subject      String      I need help!   
-  #  preview      String      Hello, I...   
-  #  createdBy    Person                            Either the Customer or User 
-  #                                                 that created this 
-  #                                                 conversation. 
-  #                                                 Inspect the Source object 
+  #  subject      String      I need help!
+  #  preview      String      Hello, I...
+  #  createdBy    Person                            Either the Customer or User
+  #                                                 that created this
+  #                                                 conversation.
+  #                                                 Inspect the Source object
   #                                                 for clarification.
-  #  createdAt    DateTime    2012-07-23T12:34:12Z  UTC time when this 
+  #  createdAt    DateTime    2012-07-23T12:34:12Z  UTC time when this
   #                                                 conversation was created.
   #  modifiedAt   DateTime    2012-07-24T20:18:33Z  UTC time when this.
   #                                                 conversation was modified.
-  #  closedAt     DateTime                          UTC time when this 
+  #  closedAt     DateTime                          UTC time when this
   #                                                 conversation was closed.
   #                                                 Null if not closed.
-  #  closedBy     Person                            User of the Help Scout user 
-  #                                                 that closed this 
+  #  closedBy     Person                            User of the Help Scout user
+  #                                                 that closed this
   #                                                 conversation.
-  #  source       Source                            Specifies the method in 
-  #                                                 which this conversation was 
+  #  source       Source                            Specifies the method in
+  #                                                 which this conversation was
   #                                                 created.
-  #  cc           Array                             Collection of strings 
+  #  cc           Array                             Collection of strings
   #                                                 representing emails.
   #  bcc          Array                             Collection of strings
   #                                                 representing emails.
   #  tags         Array                             Collection of strings
-  #  threads      Array                             Collection of Thread 
+  #  threads      Array                             Collection of Thread
   #                                                 objects. Only available when
-  #                                                 retrieving a single 
+  #                                                 retrieving a single
   #                                                 Conversation
   #
   # Possible values for status include:
@@ -170,7 +170,14 @@ module HelpScout
     # Creates a new Conversation object from a Hash of attributes
     def initialize(object)
       @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
-      @modifiedAt = DateTime.iso8601(object["userModifiedAt"]) if object["userModifiedAt"]
+
+      # helpscout is inconsistent in their modifiedAt key. Conversations list action uses 'userModifiedAt'
+      if object.has_key?("userModifiedAt")
+        @modifiedAt = DateTime.iso8601(object["userModifiedAt"])
+      elsif object.has_key?("modifiedAt")
+        @modifiedAt = DateTime.iso8601(object["modifiedAt"])
+      end
+
       @closedAt = DateTime.iso8601(object["closedAt"]) if object["closedAt"]
 
       @id = object["id"]
@@ -213,43 +220,43 @@ module HelpScout
     #
     #  Name         Type      Example               Notes
     #  id           Int       88171881              Unique identifier
-    #  assignedTo   Person                          User of the Help Scout user 
-    #                                               to which this conversation 
+    #  assignedTo   Person                          User of the Help Scout user
+    #                                               to which this conversation
     #                                               has been assigned.
     #  status       String    active                Status of the thread. Thread
-    #                                               status is only updated when 
-    #                                               there is a status change. 
-    #                                               Otherwise, the status will 
+    #                                               status is only updated when
+    #                                               there is a status change.
+    #                                               Otherwise, the status will
     #                                               be set to STATUS_NO_CHANGE.
-    #  createdAt    DateTime  2012-07-23T12:34:12Z  UTC time when this thread 
+    #  createdAt    DateTime  2012-07-23T12:34:12Z  UTC time when this thread
     #                                               was created.
-    #  createdBy    Person                          Either the Customer or User 
-    #                                               that created this 
-    #                                               conversation. Inspect the 
-    #                                               Source object for 
+    #  createdBy    Person                          Either the Customer or User
+    #                                               that created this
+    #                                               conversation. Inspect the
+    #                                               Source object for
     #                                               clarification.
-    #  source       Source     
-    #  fromMailbox  Mailbox                         If the conversation was 
-    #                                               moved, fromMailbox 
-    #                                               represents the Mailbox from 
+    #  source       Source
+    #  fromMailbox  Mailbox                         If the conversation was
+    #                                               moved, fromMailbox
+    #                                               represents the Mailbox from
     #                                               which it was moved.
-    #  type         String    message               The type of thread. 
-    #  state        String    published             The state of the thread. 
-    #  customer     Person                          If type is message, this is 
+    #  type         String    message               The type of thread.
+    #  state        String    published             The state of the thread.
+    #  customer     Person                          If type is message, this is
     #                                               the Customer of the customer
-    #                                               in which the message was 
-    #                                               sent. If type is customer, 
-    #                                               this is the Customer of the 
-    #                                               customer that initiated the 
+    #                                               in which the message was
+    #                                               sent. If type is customer,
+    #                                               this is the Customer of the
+    #                                               customer that initiated the
     #                                               thread.
-    #  body         String    Thank you.   
-    #  to           Array                           Collection of Strings 
+    #  body         String    Thank you.
+    #  to           Array                           Collection of Strings
     #                                               representing emails.
     #  cc           Array                           Collection of Strings
     #                                               representing emails.
     #  bcc          Array                           Collection of Strings
     #                                               representing emails.
-    #  attachments  Array                           Collection of Attachment 
+    #  attachments  Array                           Collection of Attachment
     #                                               objects, if they exist.
     #
     # Possible values for state include:
@@ -258,10 +265,10 @@ module HelpScout
     # * STATE_UNDER_REVIEW
     #
     # A state of STATE_UNDER_REVIEW means the thread has been stopped by Traffic
-    # Cop and is waiting to be confirmed (or discarded) by the person that 
+    # Cop and is waiting to be confirmed (or discarded) by the person that
     # created the thread.
     #
-    # Traffic Cop is the Help Scout feature that stops a thread from going out 
+    # Traffic Cop is the Help Scout feature that stops a thread from going out
     # if multiple Users act on the same Help Scout simultaneously.
     #
     # Possible values for status include:
@@ -280,15 +287,15 @@ module HelpScout
     # * TYPE_FWD_CHILD
     #
     # TYPE_LINEITEM represents a change of state on the conversation. This could
-    # include, but not limited to, the conversation was assigned, the status 
-    # changed, the conversation was moved from one mailbox to another, etc. A 
+    # include, but not limited to, the conversation was assigned, the status
+    # changed, the conversation was moved from one mailbox to another, etc. A
     # line item won't have a body, to/cc/bcc lists, or attachments.
     #
-    # When a conversation is forwarded, a new conversation is created to 
+    # When a conversation is forwarded, a new conversation is created to
     # represent the forwarded conversation.
-    # * TYPE_FWD_PARENT is the type set on the thread of the original 
+    # * TYPE_FWD_PARENT is the type set on the thread of the original
     #   conversation that initiated the forward event.
-    # * TYPE_FWD_CHILD is the type set on the first thread of the new forwarded 
+    # * TYPE_FWD_CHILD is the type set on the first thread of the new forwarded
     #   conversation.
 
     class Thread
@@ -307,10 +314,10 @@ module HelpScout
       TYPE_NOTE = "note"
       TYPE_MESSAGE = "message"
       TYPE_CUSTOMER = "customer"
-      TYPE_LINEITEM = "lineitem" 
+      TYPE_LINEITEM = "lineitem"
       TYPE_FWD_PARENT = "forwardparent"
       TYPE_FWD_CHILD = "forwardchild"
-    
+
       # Creates a new Conversation::Thread object from a Hash of attributes
       def initialize(object)
         @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
@@ -346,15 +353,15 @@ module HelpScout
 
     # Conversation::Attachment
     # http://developer.helpscout.net/objects/conversation/attachment/
-    # 
+    #
     #  Name      Type    Example               Notes
     #  id        Int     12391                 Unique identifier
-    #  mimeType  String  image/jpeg   
-    #  filename  String  logo.jpg   
+    #  mimeType  String  image/jpeg
+    #  filename  String  logo.jpg
     #  size      Int     22                    Size of the attachment in bytes.
-    #  width     Int     160  
-    #  height    Int     160  
-    #  url       String  https://.../logo.jpg  Public-facing url where 
+    #  width     Int     160
+    #  height    Int     160
+    #  url       String  https://.../logo.jpg  Public-facing url where
     #                    attachment can be downloaded
 
     class Attachment
@@ -383,7 +390,7 @@ module HelpScout
     class AttachmentData
       attr_reader :id, :data
 
-      # Creates a new Conversation::AttachmentData object from a Hash of 
+      # Creates a new Conversation::AttachmentData object from a Hash of
       # attributes
       def initialize(object)
         @id = object["id"]
@@ -396,17 +403,17 @@ module HelpScout
   # Person
   # http://developer.helpscout.net/objects/person/
   #
-  # The person object is a subset of the data representing a Customer or 
-  # User. The 'type' property will specify if this person is represented by 
+  # The person object is a subset of the data representing a Customer or
+  # User. The 'type' property will specify if this person is represented by
   # a 'user' or a 'customer'.
-  # 
+  #
   #  Name        Type      Example                 Notes
   #  id          Int       1234                    Unique identifier
-  #  firstName   String    Jack   
-  #  lastName    String    Sprout   
-  #  email       String    jack.sprout@gmail.com  
-  #  phone       String    800-555-1212  
-  #  type        String    user 
+  #  firstName   String    Jack
+  #  lastName    String    Sprout
+  #  email       String    jack.sprout@gmail.com
+  #  phone       String    800-555-1212
+  #  type        String    user
   #
   # Possible values for type include:
   # * TYPE_USER
@@ -440,16 +447,16 @@ module HelpScout
   #
   #  Name        Type      Example                 Notes
   #  id          Int       1234                    Unique identifier
-  #  firstName   String    Jack   
-  #  lastName    String    Sprout   
-  #  email       String    jack.sprout@gmail.com  
+  #  firstName   String    Jack
+  #  lastName    String    Sprout
+  #  email       String    jack.sprout@gmail.com
   #  role        String    owner                   Role of this user.
-  #  timezone    String    America/New_York   
-  #  photoUrl    String    http://.../avatar.jpg   The user's photo, if one 
+  #  timezone    String    America/New_York
+  #  photoUrl    String    http://.../avatar.jpg   The user's photo, if one
   #                                                exists.
-  #  createdAt   DateTime  2011-04-01T03:18:33Z    UTC time when this user was 
+  #  createdAt   DateTime  2011-04-01T03:18:33Z    UTC time when this user was
   #                                                created.
-  #  modifiedAt  DateTime  2012-07-24T20:18:33Z    UTC time when this user was 
+  #  modifiedAt  DateTime  2012-07-24T20:18:33Z    UTC time when this user was
   #                                                modified.
   #
   # Possible values for role include:
@@ -492,25 +499,25 @@ module HelpScout
   #
   #  Name          Type      Example               Notes
   # *id            Int       29418                 Unique identifier
-  # *firstName     String    Vernon   
-  # *lastName      String    Bear   
-  # *email         String    vbear@mywork.com      If the customer has multiple 
+  # *firstName     String    Vernon
+  # *lastName      String    Bear
+  # *email         String    vbear@mywork.com      If the customer has multiple
   #                                                emails, only one is returned.
-  # *photoUrl      String    http://../avatar.jpg   
+  # *photoUrl      String    http://../avatar.jpg
   # *photoType     String    twitter               Type of photo.
   # *gender        String    Male                  Gender of this customer.
-  # *age           String    30-35  
-  # *organization  String    Acme, Inc  
-  # *jobTitle      String    CEO and Co-Founder   
+  # *age           String    30-35
+  # *organization  String    Acme, Inc
+  # *jobTitle      String    CEO and Co-Founder
   # *location      String    Austin
-  # *createdAt     DateTime  2012-07-23T12:34:12Z  UTC time when this customer 
+  # *createdAt     DateTime  2012-07-23T12:34:12Z  UTC time when this customer
   #                                                was created.
-  # *modifiedAt    DateTime  2012-07-24T20:18:33Z  UTC time when this customer 
+  # *modifiedAt    DateTime  2012-07-24T20:18:33Z  UTC time when this customer
   #                                                was modified.
-  #  background      String   I've worked with...  This is the Background Info 
+  #  background      String   I've worked with...  This is the Background Info
   #                                                field from the UI.
   #  address         Address
-  #  socialProfiles  Array                         Array of SocialProfiles    
+  #  socialProfiles  Array                         Array of SocialProfiles
   #  emails          Array                         Array of Emails
   #  phones          Array                         Array of Phones
   #  chats           Array                         Array of Chats
@@ -525,7 +532,7 @@ module HelpScout
   # * PHOTO_TYPE_GOOGLE_PLUS
   # * PHOTO_TYPE_LINKEDIN
   #
-  # Possible values for gender include: 
+  # Possible values for gender include:
   # * GENDER_MALE
   # * GENDER_FEMALE
   # * GENDER_UNKNOWN
@@ -614,27 +621,27 @@ module HelpScout
     #
     #  Name        Type            Example               Notes
     #  id          Int             1234                  Unique identifier
-    #  lines       Array                                 Collection of strings 
-    #                                                    representing the 
-    #                                                    customer's street 
+    #  lines       Array                                 Collection of strings
+    #                                                    representing the
+    #                                                    customer's street
     #                                                    address.
-    #  city        String          Dallas   
-    #  state       String          TX   
-    #  postalCode  String          74206  
-    #  country     String          US   
-    #  createdAt   DateTime        2012-07-23T12:34:12Z  UTC time when this 
+    #  city        String          Dallas
+    #  state       String          TX
+    #  postalCode  String          74206
+    #  country     String          US
+    #  createdAt   DateTime        2012-07-23T12:34:12Z  UTC time when this
     #                                                    address was created.
-    #  modifiedAt  DateTime        2012-07-24T20:18:33Z  UTC time when this 
+    #  modifiedAt  DateTime        2012-07-24T20:18:33Z  UTC time when this
     #                                                    address was modified.
 
     class Address
       attr_reader :id, :lines, :city, :state, :postalCode, :country, :createdAt, :modifiedAt
-      
+
       # Creates a new Address object from a Hash of attributes
       def initialize(object)
         @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
         @modifiedAt = DateTime.iso8601(object["modifiedAt"]) if object["modifiedAt"]
-  
+
         @id = object["id"]
         @lines = object["lines"]
         @city = object["city"]
@@ -650,7 +657,7 @@ module HelpScout
     #
     #  Name   Type    Example  Notes
     #  id     Int     77183    Unique identifier
-    #  value  String  jsprout  
+    #  value  String  jsprout
     #  type   String  aim      Chat type
     #
     # Possible values for type include:
@@ -691,8 +698,8 @@ module HelpScout
     #
     #  Name      Type    Example           Notes
     #  id        Int     98131             Unique identifier
-    #  value     String  vbear@mywork.com   
-    #  location  String  work              Location for this email address. 
+    #  value     String  vbear@mywork.com
+    #  location  String  work              Location for this email address.
     #                                      Defaults to LOCATION_WORK
     #
     # Possible values for location include:
@@ -721,7 +728,7 @@ module HelpScout
     #
     #  Name      Type    Example       Notes
     #  id        Int     22381         Unique identifier
-    #  value     String  222-333-4444   
+    #  value     String  222-333-4444
     #  location  String  home          Location for this phone
     #
     # Possible values for location include:
@@ -756,7 +763,7 @@ module HelpScout
     #
     #  Name  Type    Example                        Notes
     #  id    Int     9184                           Unique identifier
-    #  value String  https://twitter.com/helpscout  
+    #  value String  https://twitter.com/helpscout
     #  type  String  twitter                        Type of social profile.
     #
     # Possible values for type include:
@@ -803,7 +810,7 @@ module HelpScout
     #
     #  Name   Type    Example                   Notes
     #  id     Int     5584                      Unique identifier
-    #  value  String  http://www.somewhere.com   
+    #  value  String  http://www.somewhere.com
 
     class Website
       attr_reader :id, :value
@@ -821,7 +828,7 @@ module HelpScout
   # http://developer.helpscout.net/objects/source/
   #
   #  Name  Type    Example   Notes
-  #  type  String  email     The method from which this conversation (or thread) 
+  #  type  String  email     The method from which this conversation (or thread)
   #                          was created.
   #  via   String  customer
   #
@@ -830,7 +837,7 @@ module HelpScout
   # * TYPE_WEB
   # * TYPE_NOTIFICATION
   # * TYPE_FWD
-  # 
+  #
   # Possible values for via include:
   # * VIA_USER
   # * VIA_CUSTOMER
@@ -860,19 +867,19 @@ module HelpScout
   #  Name         Type      Example               Notes
   #  id           Int       1234                  Unique identifier
   #  name         String    My Tickets            Folder name
-  #  type         String    mytickets             The type this folder 
+  #  type         String    mytickets             The type this folder
   #                                               represents.
-  #  userId       Int       4532                  If the folder type is 
-  #                                               TYPE_MY_TICKETS, userId 
+  #  userId       Int       4532                  If the folder type is
+  #                                               TYPE_MY_TICKETS, userId
   #                                               represents the Help Scout user
-  #                                               to which this folder belongs. 
+  #                                               to which this folder belongs.
   #                                               Otherwise userId is 0.
-  #  totalCount   Int       2                     Total number of conversations 
+  #  totalCount   Int       2                     Total number of conversations
   #                                               in this folder
-  #  activeCount  Int       1                     Total number of conversations 
-  #                                               in this folder that are in an 
+  #  activeCount  Int       1                     Total number of conversations
+  #                                               in this folder that are in an
   #                                               active state (vs pending).
-  #  modifiedAt   DateTime  2012-07-24T20:18:33Z  UTC time when this folder was 
+  #  modifiedAt   DateTime  2012-07-24T20:18:33Z  UTC time when this folder was
   #                                               modified.
   #
   # Possible values for type include:
