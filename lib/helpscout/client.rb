@@ -40,23 +40,23 @@ require "yaml"
 module HelpScout
   class Client
 
-    class HelpscoutError < StandardError
+    class HelpScoutError < StandardError
       attr_reader :response
 
       def initialize(response)
         super
-        puts "+++++++++++++++++ Helpscout init response #{response.to_s}"
+        puts "+++++++++++++++++ HelpScout server response #{response.to_s}"
         @response = response
       end
     end
 
-    class CouldntCreateConversation < HelpscoutError
+    class CouldntCreateConversation < HelpScoutError
     end
 
-    class CouldntCreateThread < HelpscoutError
+    class CouldntCreateThread < HelpScoutError
     end
 
-    class CouldntGetConversation < HelpscoutError
+    class CouldntGetConversation < HelpScoutError
     end
 
 
@@ -117,7 +117,7 @@ module HelpScout
       begin
         response = Client.get(request_url, {:basic_auth => auth})
       rescue SocketError => se
-        raise HelpscoutError, se.message
+        raise HelpScoutError, se.message
       end
 
       if 200 <= response.code && response.code < 300
@@ -126,7 +126,7 @@ module HelpScout
           item = envelope.item
         end
       elsif 400 <= response.code && response.code < 500
-        raise HelpscoutError, response
+        raise HelpScoutError, response
       end
       item
     end
@@ -165,7 +165,7 @@ module HelpScout
       begin
         response = Client.get(request_url, {:basic_auth => auth})
       rescue SocketError => se
-        raise HelpscoutError, se.message
+        raise HelpScoutError, se.message
       end
 
       if 200 <= response.code && response.code < 300
@@ -176,7 +176,7 @@ module HelpScout
           end
         end
       else
-        raise HelpscoutError, response
+        raise HelpScoutError, response
       end
 
       items
@@ -211,14 +211,14 @@ module HelpScout
       begin
         response = Client.get(request_url, {:basic_auth => auth})
       rescue SocketError => se
-        raise HelpscoutError, se.message
+        raise HelpScoutError, se.message
       end
 
       if 200 <= response.code && response.code < 300
         envelope = CollectionsEnvelope.new(response)
         envelope.count
       else
-        raise HelpscoutError, "Server Response: #{response.code}"
+        raise HelpScoutError, "Server Response: #{response.code}"
       end
     end
 
@@ -237,7 +237,7 @@ module HelpScout
       begin
         response = Client.post(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
       rescue SocketError => se
-        raise HelpscoutError, se.message
+        raise HelpScoutError, se.message
       end
 
       if response.respond_to?(:code) && response.code == 201
@@ -247,7 +247,7 @@ module HelpScout
           return response["Location"]
         end
       else
-        raise HelpscoutError, response
+        raise HelpScoutError, response
       end
     end
 
@@ -462,7 +462,7 @@ module HelpScout
     #  Name  Type
     #  item  Conversation
 
-    def conversation(conversationId) # throws HelpscoutError on failure
+    def conversation(conversationId) # throws HelpScoutError on failure
       url = "/conversations/#{conversationId}.json"
 
       item = Client.request_item(@auth, url, nil)
@@ -499,11 +499,11 @@ module HelpScout
 
     def add_thread_to_conversation(conversation,thread) # throws HelpScoutError on failure
       if !conversation
-        raise HelpscoutError.new("Missing Conversation")
+        raise HelpScoutError.new("Missing Conversation")
       end
 
       if !thread
-        raise HelpscoutError.new("Missing Thread")
+        raise HelpScoutError.new("Missing Thread")
       end
 
       url = "/conversations/#{conversation.id}.json"
@@ -512,7 +512,7 @@ module HelpScout
     end
 
 
-    def create_conversation(conversation) #throws HelpscoutError on failure
+    def create_conversation(conversation) #throws HelpScoutError on failure
       if !conversation
         raise StandardError.new("Missing Conversation")
       end
