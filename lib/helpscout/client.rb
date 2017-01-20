@@ -390,7 +390,7 @@ module HelpScout
 
 
     # List Mailboxes
-    # http://developer.helpscout.net/mailboxes/
+    # http://developer.helpscout.net/help-desk-api/customers/list-mailbox/
     #
     # Fetches all mailboxes
     #
@@ -803,7 +803,7 @@ module HelpScout
 
 
     # Get Customer
-    # http://developer.helpscout.net/customers/
+    # http://developer.helpscout.net/help-desk-api/customers/get/
     #
     # Fetches a single Customer
     #
@@ -830,7 +830,7 @@ module HelpScout
 
 
     # List Customers
-    # http://developer.helpscout.net/customers/
+    # http://developer.helpscout.net/help-desk-api/customers/list/
     #
     # Customers can be filtered on any combination of first name, last name, and
     # email.
@@ -901,7 +901,7 @@ module HelpScout
     end
 
     # Create Customer
-    # http://developer.helpscout.net/customers/create/
+    # http://developer.helpscout.net/help-desk-api/customers/create/
     #
     # Creates a new Customer.
     #
