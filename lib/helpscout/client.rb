@@ -252,6 +252,35 @@ module HelpScout
     end
 
 
+    # Sends a PUT request to create a single item from the Help Scout API.
+    #
+    # url     String  A string representing the url to PUT.
+    # params  Hash    A hash of PUT parameters to use for this particular
+    #                 request.
+    #
+    #  Response
+    #  Name      Type    Notes
+    #  Location  String  https://api.helpscout.net/v1/customer/{id}.json
+
+    def self.update_item(auth, url, params = {})
+      begin
+        response = Client.put(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+      rescue SocketError => se
+        raise StandardError, se.message
+      end
+
+      if response.code == 201
+        if response["item"]
+          response["item"]
+        else
+          response["Location"]
+        end
+      else
+        raise StandardError.new("Server Response: #{response.code} #{response.message}")
+      end
+    end
+
+
     # HelpScout::Client.new
     #
     # Initializes the Help Scout Client. Once called, you may use any of the
