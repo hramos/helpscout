@@ -76,7 +76,7 @@ module HelpScout
   #                                             modified.
 
   class Mailbox
-    attr_reader :id, :name, :slug, :email, :createdAt, :modifiedAt, :folders
+    attr_reader :id, :name, :slug, :email, :createdAt, :modifiedAt, :folders, :customFields
 
     # Creates a new Mailbox object from a Hash of attributes
     def initialize(object)
@@ -95,6 +95,107 @@ module HelpScout
           @folders << Folder.new(folder)
         end
       end
+
+      @customFields = []
+      if object["customFields"]
+        object["customFields"].each do |field|
+          @customFields << CustomField.new(field)
+        end
+      end
+    end
+  end
+
+
+  # Mailbox::CustomField
+  # The custom field object represents optional data that can defined for specific mailbox and filled when creating or updating a Conversation.
+  #
+  # Name	        Type	        Example	      Notes
+  # id	          Int	          1	           Unique custom field definition identifier
+  # fieldName	    String	      Project	     The name of the field; note that this may change if a field is renamed, but the id will not
+  # fieldType	    Enumerated    String	     SINGLE_LINE	Type of the field - with following values: SINGLE_LINE, MULTI_LINE, DATA, NUMBER or DROPDOWN
+  # required	    Boolean	      true	       Flag for UI to mark the field as required
+  # order	        Int	          10	         Relative order of the custom field. Can be null or a number between 0 and 255.
+  # options	      Collection	 	Collection of Option objects;
+  #
+  # Example: Simple Text Field
+  # {
+  # "id": 1,
+  # "fieldName": "Project",
+  # "fieldType": "SINGLE_LINE",
+  # "required": true,
+  # "order" : 10,
+  # "options" : null
+  # }
+  #
+  # Example: Dropdown field
+  #
+  # {
+  #   "id": 2,
+  #   "fieldName": "Card",
+  #   "fieldType": "DROPDOWN",
+  #   "required": true,
+  #   "order" : 10,
+  #   "options" : [
+  #     {
+  #       "id": 1,
+  #       "label": "Ford",
+  #       "order": 1
+  #     },
+  #     {
+  #     "id": 2,
+  #     "label": "GM",
+  #     "order": 2
+  #     }
+  #   ]
+  # }
+
+
+  class CustomField
+    attr_reader :id, :fieldName, :fieldType, :required, :order, :options
+
+    # Creates a new Mailbox::CustomField object from a Hash of attributes
+    def initialize(object)
+      @id        = object["id"]
+      @fieldName = object["fieldName"]
+      @fieldType = object["fieldType"]
+      @required  = object["required"]
+      @order     = object["order"]
+
+      @options = []
+      if object["options"]
+        object["options"].each do |field|
+          @options << CustomFieldOption.new(field)
+        end
+      end
+
+    end
+  end
+
+
+  # Mailbox::CustomFieldOption
+  # The custom field option object represents option for a custom field of type DROPDOWN
+  #
+  # Name	Type	  Example	          Notes
+  # id	  Int	    1	                Unique custom field option identifier
+  # label	String	Customer Support	Label of the option
+  # order	Int	    10	              Relative order of the custom field option. Can be null or a number between 0 and 255.
+  #
+  # Example
+  # {
+  #   "id": 1,
+  #   "label": "Custom Support",
+  #   "order": 10
+  # }
+
+
+  class CustomFieldOption
+    attr_reader :id, :label, :order
+
+    # Creates a new Mailbox::CustomFieldOption object from a Hash of attributes
+    def initialize(object)
+      @id        = object["id"]
+      @label     = object["label"]
+      @order     = object["order"]
     end
   end
 
@@ -153,6 +254,10 @@ module HelpScout
   #                                                 objects. Only available when
   #                                                 retrieving a single
   #                                                 Conversation
+  #  customFields Array                             Collection of Field
+  #                                                 objects. Only available when
+  #                                                 retrieving a single
+  #                                                 Conversation
   #
   # Possible values for status include:
   # * STATUS_ACTIVE
@@ -161,7 +266,7 @@ module HelpScout
   # * STATUS_SPAM
 
   class Conversation
-    attr_reader :id, :type, :folderId, :isDraft, :number, :owner, :mailbox, :customer, :threadCount, :status, :subject, :preview, :createdBy, :createdAt, :modifiedAt, :closedAt, :closedBy, :source, :cc, :bcc, :tags, :threads, :url
+    attr_reader :id, :type, :folderId, :isDraft, :number, :owner, :mailbox, :customer, :threadCount, :status, :subject, :preview, :createdBy, :createdAt, :modifiedAt, :closedAt, :closedBy, :source, :cc, :bcc, :tags, :customFields, :threads, :url
 
     STATUS_ACTIVE = "active"
     STATUS_PENDING = "pending"
@@ -204,6 +309,13 @@ module HelpScout
       if object["threads"]
         object["threads"].each do |thread|
           @threads << Thread.new(thread)
+        end
+      end
+
+      @customFields = []
+      if object["customFields"]
+        object["customFields"].each do |thread|
+          @customFields << Field.new(thread)
         end
       end
 
@@ -348,6 +460,44 @@ module HelpScout
       # Returns a String suitable for display
       def to_s
         "#{@customer}: #{@body}"
+      end
+    end
+
+
+    # Conversation::Field
+    # http://developer.helpscout.net/help-desk-api/objects/field/
+    #
+    #  Name      Type    Example               Notes
+    #  fieldId   Int     1                     The field definition identifier; note that multiple conversations will each have values for the same field identifier
+    #  name	     String  Team	                 The name of the field; note that this may change if a field is renamed, but the fieldId will not
+    #  value	   String	 Development	         The value the user specified for the field
+
+    #  The field object represents a user's response to a custom field in the context of a single conversation.
+
+    #   Allowed values for specific Custom Fields Types
+
+    #   Field Type	        Expected format
+    #   SINGLE_LINE	        Text, maximal length is 255 characters
+    #   MULTI_LINE        	Text, maximal length is 65535
+    #   DATE	              Date and in following format : yyyy-MM-dd
+    #   NUMBER	            Any number - integer or with floating point
+    #   DROPDOWN	          ID of associated Custom Field Option
+    #
+    # Example
+    # {
+    #   "fieldId": 1,
+    #   "name": "Team",
+    #   "value": "Development"
+    # }
+
+    class Field
+      attr_reader :fieldId, :name, :value
+
+      # Creates a new Conversation::Field object from a Hash of attributes
+      def initialize(object)
+        @fieldId = object["fieldId"]
+        @name    = object["name"]
+        @value   = object["value"]
       end
     end
 
