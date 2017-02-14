@@ -8,8 +8,9 @@
 #
 # All date/times returned by the API are in ISO8601 format and in UTC timezone.
 
-module HelpScout
+require_relative 'rating.rb'
 
+module HelpScout
   # Response Envelopes
   # http://developer.helpscout.net/
   #
@@ -35,7 +36,7 @@ module HelpScout
       @page = object["page"]
       @pages = object["pages"]
       @count = object["count"]
-      @items = object["items"]
+      @items = object["items"] || object["results"]
     end
   end
 
