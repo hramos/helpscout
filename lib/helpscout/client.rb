@@ -139,16 +139,8 @@ module HelpScout
     #           items   Array  Collection of objects
 
     def self.request_items(auth, url, params = {})
-      request_url = ""
-      request_url << url
-      if params
-        query = ""
-        params.each { |k,v| query += "#{k}=#{v}&" }
-        request_url << "?" + query
-      end
-
       begin
-        response = Client.get(request_url, {:basic_auth => auth})
+        response = Client.get(url, {:basic_auth => auth, :query => params})
       rescue SocketError => se
         raise StandardError, se.message
       end
