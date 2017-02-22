@@ -161,6 +161,31 @@ module HelpScout
       envelope.items || []
     end
 
+    # Loads paginated list of records
+    # It starts to load records from page 1 and proceed until number of loaded records will exceed limit or
+    # all records will be fetched
+    # auth - authentication info
+    # url - endpoint to load records from
+    # klass - type of expected result records
+    # params - additional get params (will be appended to url). This method will override any page value if provided
+    # limit - maximal number of records to fetch (set to negative value or 0 to retrieve all)
+    def self.load_paginated_items_list(auth, url, klass, params, limit)
+      page = 1
+      options = params.clone # to avoid argument modification
+      sz = 0
+      result = []
+      begin
+        options[:page] = page
+        items = Client.request_items(auth, url, options)
+        items.each do |item|
+          result << klass.new(item)
+          sz += 1
+          break if limit > 0 && sz == limit
+        end
+        page += 1
+      end while items && items.count > 0 && (limit <= 0 || sz < limit)
+      result
+    end
 
     # Requests a collections of items from the Help Scout API. Should return
     # the total count for this collection, or raise an error with an
@@ -787,7 +812,7 @@ module HelpScout
 
 
     # List Customers
-    # http://developer.helpscout.net/customers/
+    # http://developer.helpscout.net/help-desk-api/customers/list/
     #
     # Customers can be filtered on any combination of first name, last name, and
     # email.
@@ -809,52 +834,29 @@ module HelpScout
     # Response
     #  Name   Type
     #  items  Array  Collection of Customer objects.
-
-    def customers(limit=0, firstName=nil, lastName=nil, email=nil, mailboxId=nil)
-      url = mailboxId.nil? ? "/customers.json" : "/mailboxes/#{mailboxId}/customers.json"
-
-      page = 1
+    def customers(limit=0, firstName=nil, lastName=nil, email=nil)
       options = {}
-
-      if limit < 0
-        limit = 0
-      end
-
       if firstName
-        options["firstName"] = firstName
+        options[:firstName] = firstName
       end
-
       if lastName
-        options["lastName"] = lastName
+        options[:lastName] = lastName
       end
-
       if email
-        options["email"] = email
+        options[:email] = email
       end
 
-      customers = []
-
-      begin
-        options["page"] = page
-        items = Client.request_items(@auth, url, options)
-        items.each do |item|
-          customers << Customer.new(item)
-        end
-        page = page + 1
-      rescue StandardError => e
-        puts "Request failed: #{e.message}"
-      end while items && items.count > 0 && (limit == 0 || customers.count < limit)
-
-      if limit > 0 && customers.count > limit
-        customers = customers[0..limit-1]
-      end
-
-      customers
+      Client.load_paginated_items_list(@auth, '/customers.json', Customer, options, limit)
     end
 
-    # Helper method to find customers by mailbox
-    def customers_by_mailbox(mailboxId)
-      customers(0, nil, nil, nil, mailboxId)
+    #
+    # List Customers by Mailbox
+    # http://developer.helpscout.net/help-desk-api/customers/list-mailbox/
+    #
+    # Returns a list of Customers with conversations associated with the specified mailbox.
+    # At this time all customers are returned by createdAt date (from newest to oldest).
+    def customers_by_mailbox(limit=0, mailboxId)
+      Client.load_paginated_items_list(@auth, "/mailboxes/#{mailboxId}/customers.json", Customer, {}, limit)
     end
 
     # Helper method to find customers by email
