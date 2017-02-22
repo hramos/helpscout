@@ -26,7 +26,8 @@ Gem::Specification.new do |s|
     "helpscout.gemspec",
     "lib/helpscout.rb",
     "lib/helpscout/client.rb",
-    "lib/helpscout/models.rb"
+    "lib/helpscout/models.rb",
+    "lib/helpscout/rating.rb"
   ]
   s.homepage = "http://github.com/hramos/helpscout"
   s.licenses = ["MIT"]
