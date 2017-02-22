@@ -891,6 +891,8 @@ module HelpScout
       url = "/customers.json"
 
       begin
+        # We need to set reload flag to true to receive created object back
+        customer[:reload] = true
         item = Client.create_item(@auth, url, customer.to_json)
         Customer.new(item)
       rescue StandardError => e
