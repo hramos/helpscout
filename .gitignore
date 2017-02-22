@@ -3,4 +3,5 @@
 /pkg
 Gemfile.lock
 *.swp
+helpscout-*.gem
 .idea
