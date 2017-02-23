@@ -245,7 +245,7 @@ module HelpScout
     #  Name      Type    Notes
     #  Location  String  https://api.helpscout.net/v1/conversations/{id}.json
 
-    def self.create_item(auth, url, params = {})
+    def self.create_item(auth, url, params)
       begin
         response = Client.post(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
       rescue SocketError => se
@@ -891,7 +891,7 @@ module HelpScout
       url = "/customers.json"
 
       begin
-        item = Client.create_item(@auth, url, {customer: customer, reload: true})
+        item = Client.create_item(@auth, url, {customer: customer, reload: true}.to_json)
         Customer.new(item)
       rescue StandardError => e
         puts "Could not create customer: #{e.message}"
