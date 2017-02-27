@@ -23,6 +23,7 @@ Jeweler::Tasks.new do |gem|
   gem.description = %Q{}
   gem.email = Base64.decode64("aGVjdG9yQGhlY3RvcnJhbW9zLmNvbQ==\n")
   gem.authors = ["Héctor Ramos"]
+  gem.files.exclude 'spec/*' # excluding spec files
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
