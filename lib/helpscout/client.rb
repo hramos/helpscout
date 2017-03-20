@@ -575,6 +575,7 @@ module HelpScout
     CONVERSATION_FILTER_STATUS_ACTIVE = "active"
     CONVERSATION_FILTER_STATUS_ALL = "all"
     CONVERSATION_FILTER_STATUS_PENDING = "pending"
+    CONVERSATION_FILTER_STATUS_CLOSED = "closed"
 
     def conversations(mailboxId, status, limit=0, modifiedSince)
       url = "/mailboxes/#{mailboxId}/conversations.json"
@@ -586,7 +587,7 @@ module HelpScout
         limit = 0
       end
 
-      if status && (status == CONVERSATION_FILTER_STATUS_ACTIVE || status == CONVERSATION_FILTER_STATUS_ALL || status == CONVERSATION_FILTER_STATUS_PENDING)
+      if status && (status == CONVERSATION_FILTER_STATUS_ACTIVE || status == CONVERSATION_FILTER_STATUS_ALL || status == CONVERSATION_FILTER_STATUS_PENDING || status == CONVERSATION_FILTER_STATUS_CLOSED)
         options["status"] = status
       end
 
@@ -660,6 +661,45 @@ module HelpScout
 
     def conversations_in_folder(mailboxId, folderId, status, limit=0, modifiedSince)
       url = "/mailboxes/#{mailboxId}/folders/#{folderId}/conversations.json"
+
+      page = 1
+      options = {}
+
+      if limit < 0
+        limit = 0
+      end
+
+      if status && (status == CONVERSATION_FILTER_STATUS_ACTIVE || status == CONVERSATION_FILTER_STATUS_ALL || status == CONVERSATION_FILTER_STATUS_PENDING)
+        options["status"] = status
+      end
+
+      if modifiedSince
+        options["modifiedSince"] = modifiedSince
+      end
+
+      conversations = []
+
+      begin
+        options["page"] = page
+        items = Client.request_items(@auth, url, options)
+        items.each do |item|
+          conversations << Conversation.new(item)
+        end
+        page = page + 1
+      rescue StandardError => e
+        puts "List Conversations In Folder Request failed: #{e.message}"
+      end while items && items.count > 0 && (limit == 0 || conversations.count < limit)
+
+      if limit > 0 && conversations.count > limit
+        conversations = conversations[0..limit-1]
+      end
+
+      conversations
+    end
+    
+    
+    def conversations_by_customer(mailboxId, customerId, status, limit=0, modifiedSince)
+      url = "/mailboxes/#{mailboxId}/customers/#{customerId}/conversations.json"
 
       page = 1
       options = {}
