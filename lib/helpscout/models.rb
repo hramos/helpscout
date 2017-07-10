@@ -368,7 +368,7 @@ module HelpScout
     #                    attachment can be downloaded
 
     class Attachment
-      attr_reader :id, :mimeType, :filename, :size, :width, :height, :url
+      attr_reader :id, :mimeType, :filename, :size, :width, :height, :url, :hash
 
       # Creates a new Conversation::Attachment object from a Hash of attributes
       def initialize(object)
@@ -379,6 +379,7 @@ module HelpScout
         @width = object["width"]
         @height = object["height"]
         @url = object["url"]
+        @hash = object["hash"]
       end
     end
 
