@@ -36,6 +36,7 @@
 require "erb"
 require "httparty"
 require "yaml"
+require "base64"
 
 module HelpScout
   class Client
@@ -1047,6 +1048,38 @@ module HelpScout
       url = "/customers/#{customer.id}.json"
 
       Client.update_item(@auth, url, customer.to_json)
+    end
+
+    # Create Attachment
+    # http://developer.helpscout.net/help-desk-api/objects/attachment/
+    #
+    # Createes an Attachment
+    #
+    # Request
+    #  REST Method: POST
+    #  URL: https://api.helpscout.net/v1/attachments.json
+    #
+    #  POST Parameters
+    #  Name      Type      Required  Notes
+    #  fileName  string    Yes
+    #  mimeType  String    Yes
+    #  data      string    Yes       Base64-encoded stream of data.
+    #
+    # Response
+    #  Response   Name      Type    Notes
+    #  Header     Status    Integer 201
+    #  Body       item      string  The hash of the created attachment. Use this hash when associating the attachment with a new thread.
+
+    def create_attachment(file_name, mime_type, file)
+      url = "/attachments.json"
+
+      attributes = {
+        fileName: file_name,
+        mimeType: mime_type,
+        data: Base64.encode64(file.read)
+      }
+
+      Client.create_item(@auth, url, attributes.to_json)
     end
 
   end
