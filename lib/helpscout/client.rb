@@ -263,6 +263,30 @@ module HelpScout
       end
     end
 
+    # Sends a PUT request to update a single item from the Help Scout API.
+    #
+    # url     String  A string representing the url to PUT.
+    # params  Hash    A hash of PUT parameters to use for this particular
+    #                 request.
+    #
+    # Response
+    #  Name      Type    Notes
+    #  Location  String  https://api.helpscout.net/v1/conversations/{id}.json
+
+    def self.update_item(auth, url, params = {})
+      begin
+        response = Client.put(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+      rescue SocketError => se
+        raise StandardError, se.message
+      end
+
+      if response.code == 200
+        url
+      else
+        raise StandardError.new("Server Response: #{response.code} #{response.message}")
+      end
+    end
+
 
     # HelpScout::Client.new
     #
@@ -526,6 +550,35 @@ module HelpScout
         response = Client.create_item(@auth, url, conversation.to_json)
       rescue StandardError => e
         puts "Could not create conversation: #{e.message}"
+      end
+    end
+
+    # Update Conversation
+    # https://developer.helpscout.com/help-desk-api/conversations/update/
+    #
+    # Updates a Conversation.
+    #
+    # Request
+    #  REST Method: PUT
+    #  URL: https://api.helpscout.net/v1/conversations/{id}.json
+    #
+    #  PUT Parameters
+    #  Name          Type          Required  Notes
+    #  conversation  Conversation  Yes
+    #  reload        boolean       No        Set this parameter to 'true' to
+    #                                        return the created conversation in
+    #                                        the response.
+    #
+
+    def update_conversation(conversation_id, params)
+      raise StandardError.new('Missing Conversation ID') if conversation_id.blank?
+
+      url = "/conversations/#{conversation_id}.json"
+
+      begin
+        response = Client.update_item(@auth, url, params.to_json)
+      rescue StandardError => e
+        puts "Could not update conversation: #{e.message}"
       end
     end
 
