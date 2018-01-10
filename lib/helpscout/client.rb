@@ -566,6 +566,33 @@ module HelpScout
       Client.create_item(@auth, url, thread.to_json)
     end
 
+    # Update Conversation Thread
+    # https://developer.helpscout.com/help-desk-api/conversations/update-thread/
+    #
+    # Updates a Conversation Thread.
+    #
+    # Request
+    #  REST Method: PUT
+    #  URL: https://api.helpscout.net/v1/conversations/{conversationId}/threads/{id}.json
+    #
+    #  PUT Parameters
+    #  Name      Type                Required  Notes
+    #  thread    ConversationThread  Yes       The body of the request
+    #  reload    boolean             No        Set to true to return the thread in the
+    #                                          response.
+    # Response
+    #  Response   Name      Type    Notes
+    #  Header     Status    Integer 200
+
+    def update_conversation_thread(conversationId, thread)
+      if !thread || !thread.id
+        raise StandardError.new("Missing Thread")
+      end
+
+      url = "/conversations/#{conversationId}/threads/#{thread.id}.json"
+
+      Client.update_item(@auth, url, thread.to_json)
+    end
 
     # List Conversations
     # http://developer.helpscout.net/conversations/list/
