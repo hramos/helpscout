@@ -230,6 +230,8 @@ module HelpScout
     #                                               be set to STATUS_NO_CHANGE.
     #  createdAt    DateTime  2012-07-23T12:34:12Z  UTC time when this thread
     #                                               was created.
+    #  openedAt     DateTime  2012-07-23T12:34:12Z  UTC time when this thread was
+    #                                               viewed by the customer.
     #  createdBy    Person                          Either the Customer or User
     #                                               that created this
     #                                               conversation. Inspect the
@@ -301,7 +303,7 @@ module HelpScout
     #   conversation.
 
     class Thread
-      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :source, :actionType, :fromMailbox, :type, :state, :customer, :body, :to, :cc, :bcc, :attachments
+      attr_reader :id, :assignedTo, :status, :createdAt, :openedAt, :createdBy, :source, :actionType, :fromMailbox, :type, :state, :customer, :body, :to, :cc, :bcc, :attachments
 
       STATE_PUBLISHED = "published"
       STATE_DRAFT = "draft"
@@ -323,6 +325,7 @@ module HelpScout
       # Creates a new Conversation::Thread object from a Hash of attributes
       def initialize(object)
         @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
+        @openedAt = DateTime.iso8601(object["openedAt"]) if object["openedAt"]
 
         @id = object["id"]
         @assignedTo = Person.new(object["assignedTo"]) if object["assignedTo"]
