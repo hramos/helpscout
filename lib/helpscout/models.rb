@@ -412,7 +412,8 @@ module HelpScout
     #   conversation.
 
     class Thread
-      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :source, :fromMailbox, :type, :state, :customer, :body, :to, :cc, :bcc, :attachments
+      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :source, :fromMailbox, :type, :state,
+                  :customer, :body, :to, :cc, :bcc, :attachments, :openedAt, :actionType
 
       STATE_PUBLISHED = "published"
       STATE_DRAFT = "draft"
@@ -434,6 +435,7 @@ module HelpScout
       # Creates a new Conversation::Thread object from a Hash of attributes
       def initialize(object)
         @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
+        @openedAt = DateTime.iso8601(object["openedAt"]) if object["openedAt"]
 
         @id = object["id"]
         @assignedTo = Person.new(object["assignedTo"]) if object["assignedTo"]
@@ -448,6 +450,7 @@ module HelpScout
         @to = object["to"]
         @cc = object["cc"]
         @bcc = object["bcc"]
+        @actionType = object["actionType"]
 
         @attachments = []
         if object["attachments"]
