@@ -263,6 +263,30 @@ module HelpScout
       end
     end
 
+    # Sends a PUT request to update a single item from the Help Scout API.
+    #
+    # url     String  A string representing the url to PUT.
+    # params  Hash    A hash of PUT parameters to use for this particular
+    #                 request.
+    #
+    # Response
+    #  Name      Type    Notes
+    #  Location  String  https://api.helpscout.net/v1/conversations/{id}.json
+
+    def self.update_item(auth, url, params = {})
+      begin
+        response = Client.put(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+      rescue SocketError => se
+        raise StandardError, se.message
+      end
+
+      if response.code == 200
+        url
+      else
+        raise StandardError.new("Server Response: #{response.code} #{response.message}")
+      end
+    end
+
 
     # HelpScout::Client.new
     #
@@ -460,6 +484,30 @@ module HelpScout
       folders
     end
 
+    # Get Workflows
+    # https://developer.helpscout.com/help-desk-api/workflows/list/
+    #
+    # Fetches all Workflows in a given mailbox
+    #
+    # mailboxId  Int  id of the Mailbox being requested
+    #
+    # Request
+    #  REST Method: GET
+    #  URL: https://api.helpscout.net/v1/mailboxes/{id}/workflows.json
+    #
+    #  Parameters:
+    #   Name  Type  Required  Default  Notes
+    #   page  Int   No        1
+    #
+    # Response
+    #  Name   Type
+    #  items  Array  Collection of Workflow objects
+
+    def workflows_in_mailbox(mailboxId)
+      url = "/mailboxes/#{mailboxId}/workflows.json"
+      items = Client.request_items(@auth, url)
+      items.map { |item| Workflow.new(item) }
+    end
 
     # Get Conversation
     # http://developer.helpscout.net/conversations/get/
@@ -529,6 +577,70 @@ module HelpScout
       end
     end
 
+    # Update Conversation
+    # https://developer.helpscout.com/help-desk-api/conversations/update/
+    #
+    # Updates a Conversation.
+    #
+    # Request
+    #  REST Method: PUT
+    #  URL: https://api.helpscout.net/v1/conversations/{id}.json
+    #
+    #  PUT Parameters
+    #  Name          Type          Required  Notes
+    #  conversation  Conversation  Yes
+    #  reload        boolean       No        Set this parameter to 'true' to
+    #                                        return the created conversation in
+    #                                        the response.
+    #
+
+    def update_conversation(conversation_id, params)
+      raise StandardError.new('Missing Conversation ID') if conversation_id.blank?
+
+      url = "/conversations/#{conversation_id}.json"
+
+      begin
+        response = Client.update_item(@auth, url, params.to_json)
+      rescue StandardError => e
+        puts "Could not update conversation: #{e.message}"
+      end
+    end
+
+
+    # Create Conversation Thread
+    # http://developer.helpscout.net/help-desk-api/conversations/create-thread/
+    #
+    # Creates a new Conversation Thread.
+    #
+    # Request
+    #  REST Method: POST
+    #  URL: https://api.helpscout.net/v1/conversations/{id}.json
+    #
+    #  POST Parameters
+    #  Name          Type          Required  Notes
+    #  thread        ConversationThread  Yes
+    #  imported      boolean       No        The import parameter enables
+    #                                        conversations to be created for
+    #                                        historical purposes (i.e. if moving
+    #                                        from a different platform, you can
+    #                                        import your history). When import
+    #                                        is set to true, no outgoing emails
+    #                                        or notifications will be generated.
+    #  reload        boolean       No        Set this parameter to 'true' to
+    #                                        return the created conversation in
+    #                                        the response.
+    #
+
+    def create_conversation_thread(conversationId, thread)
+      url = "/conversations/#{conversationId}.json"
+
+      begin
+        response = Client.create_item(@auth, url, thread.to_json)
+      rescue StandardError => e
+        puts "Could not create conversation thread: #{e.message}"
+      end
+    end
+    
 
     # List Conversations
     # http://developer.helpscout.net/conversations/list/

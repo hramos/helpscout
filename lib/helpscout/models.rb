@@ -412,7 +412,8 @@ module HelpScout
     #   conversation.
 
     class Thread
-      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :source, :fromMailbox, :type, :state, :customer, :body, :to, :cc, :bcc, :attachments
+      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :source, :fromMailbox, :type, :state,
+                  :customer, :body, :to, :cc, :bcc, :attachments, :openedAt, :actionType
 
       STATE_PUBLISHED = "published"
       STATE_DRAFT = "draft"
@@ -434,6 +435,7 @@ module HelpScout
       # Creates a new Conversation::Thread object from a Hash of attributes
       def initialize(object)
         @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
+        @openedAt = DateTime.iso8601(object["openedAt"]) if object["openedAt"]
 
         @id = object["id"]
         @assignedTo = Person.new(object["assignedTo"]) if object["assignedTo"]
@@ -448,6 +450,7 @@ module HelpScout
         @to = object["to"]
         @cc = object["cc"]
         @bcc = object["bcc"]
+        @actionType = object["actionType"]
 
         @attachments = []
         if object["attachments"]
@@ -1061,6 +1064,41 @@ module HelpScout
       @userId = object["userId"]
       @totalCount = object["totalCount"]
       @activeCount = object["activeCount"]
+    end
+  end
+
+  # Workflow
+  # https://developer.helpscout.com/help-desk-api/objects/workflow/
+  #
+  #  Name         Type      Example               Notes
+  #  id           Int       1234                  Unique identifier
+  #  mailboxId    Int       100                   The id of the mailbox that the workflow is associated with
+  #  type         String    manual                The type of workflow:
+  #                                                 automatic
+  #                                                 manual
+  #  status       String    active                The status of the workflow:
+  #                                                 active
+  #                                                 inactive
+  #                                                 invalid
+  #  order        Int       1                      The order of the workflow.
+  #  name         String    My Workflow            Workflow name
+  #  createdAt    Datetime  2012-07-24T20:18:33Z   UTC time when this workflow was created.
+  #  modifiedAt   Datetime  2012-07-24T20:18:33Z   UTC time when this workflow was modified.
+  #
+
+  class Workflow
+    attr_reader :id, :mailboxId, :type, :status, :order, :name, :createdAt, :modifiedAt
+
+    # Creates a new Workflow object from a Hash of attributes
+    def initialize(object)
+      @id         = object['id']
+      @mailboxId  = object['mailboxId']
+      @type       = object['type']
+      @status     = object['status']
+      @order      = object['order']
+      @name       = object['name']
+      @modifiedAt = DateTime.iso8601(object['modifiedAt']) if object['modifiedAt']
+      @createdAt  = DateTime.iso8601(object['createdAt']) if object['createdAt']
     end
   end
 end
