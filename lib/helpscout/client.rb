@@ -484,6 +484,30 @@ module HelpScout
       folders
     end
 
+    # Get Workflows
+    # https://developer.helpscout.com/help-desk-api/workflows/list/
+    #
+    # Fetches all Workflows in a given mailbox
+    #
+    # mailboxId  Int  id of the Mailbox being requested
+    #
+    # Request
+    #  REST Method: GET
+    #  URL: https://api.helpscout.net/v1/mailboxes/{id}/workflows.json
+    #
+    #  Parameters:
+    #   Name  Type  Required  Default  Notes
+    #   page  Int   No        1
+    #
+    # Response
+    #  Name   Type
+    #  items  Array  Collection of Workflow objects
+
+    def workflows_in_mailbox(mailboxId)
+      url = "/mailboxes/#{mailboxId}/workflows.json"
+      items = Client.request_items(@auth, url)
+      items.map { |item| Workflow.new(item) }
+    end
 
     # Get Conversation
     # http://developer.helpscout.net/conversations/get/
