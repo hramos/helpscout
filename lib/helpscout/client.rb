@@ -535,6 +535,28 @@ module HelpScout
       Client.create_item(@auth, url, conversation.to_json)
     end
 
+    # Update Conversation
+    # https://developer.helpscout.com/help-desk-api/conversations/update/
+    #
+    # Updates a Conversation.
+    #
+    # Request
+    #  REST Method: PUT
+    #  URL: https://api.helpscout.net/v1/conversations/{id}.json
+    #
+    # Response
+    #  Response   Name      Type    Notes
+    #  Header     Status    Integer 200
+
+    def update_conversation(conversation)
+      if !conversation || !conversation.id
+        raise StandardError.new("Missing Conversation")
+      end
+
+      url = "/conversations/#{conversation.id}.json"
+
+      Client.update_item(@auth, url, conversation.to_json)
+    end
 
     # Create Conversation Thread
     # http://developer.helpscout.net/help-desk-api/conversations/create-thread/
