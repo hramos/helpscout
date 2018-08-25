@@ -243,7 +243,7 @@ module HelpScout
         raise StandardError, se.message
       end
 
-      if response.code == 201
+      if response.code.to_s =~ /^2../
         if response["item"]
           response["item"]
         else
@@ -272,7 +272,7 @@ module HelpScout
         raise StandardError, se.message
       end
 
-      if response.code == 200
+      if response.code.to_s =~ /^2../
         true
       else
         raise StandardError.new("Server Response: #{response.code} #{response.message}")
