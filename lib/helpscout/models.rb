@@ -185,7 +185,9 @@ module HelpScout
       @folderId = object["folderId"]
       @isDraft = object["isDraft"]
       @number = object["number"]
-      @owner = Person.new(object["owner"]) if object["owner"]
+      if object.has_key?("owner")
+        @owner = object["owner"] ? Person.new(object["owner"]) : nil
+      end
       @mailbox = Mailbox.new(object["mailbox"]) if object["mailbox"]
       @customer = Person.new(object["customer"]) if object["customer"]
       @threadCount = object["threadCount"]
