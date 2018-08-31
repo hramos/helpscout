@@ -238,7 +238,7 @@ module HelpScout
 
     def self.create_item(auth, url, params = {})
       begin
-        response = Client.post(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+        response = Client.post(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json;charset=UTF-8' }, :body => params })
       rescue SocketError => se
         raise StandardError, se.message
       end
@@ -267,7 +267,7 @@ module HelpScout
 
     def self.update_item(auth, url, params = {})
       begin
-        response = Client.put(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json' }, :body => params })
+        response = Client.put(url, {:basic_auth => auth, :headers => { 'Content-Type' => 'application/json;charset=UTF-8' }, :body => params })
       rescue SocketError => se
         raise StandardError, se.message
       end
