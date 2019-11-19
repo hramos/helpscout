@@ -146,6 +146,7 @@ module HelpScout
       @preview = object["preview"]
       @source = Source.new(object["source"]) if object["source"]
       @number = object["number"]
+      @owner = Person.new(object["owner"]) if object["owner"]
 
       @threads = []
       if object["_embedded"] && object["_embedded"]["threads"]
@@ -156,7 +157,7 @@ module HelpScout
     end
 
     def owner
-      assignee
+      @owner || assignee
     end
 
     def change_array
@@ -172,7 +173,7 @@ module HelpScout
     end
 
     class Thread
-      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :type, :state, :customer, :text, :to, :cc, :bcc, :attachments, :openedAt, :body, :source, :action
+      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :type, :state, :customer, :text, :to, :cc, :bcc, :attachments, :openedAt, :body, :source, :actionType, :actionSourceId
 
       def initialize(object)
         @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
@@ -190,7 +191,8 @@ module HelpScout
         @bcc = object["bcc"]
         @body = object["body"]
         @source = Source.new(object["source"]) if object["source"]
-        @action = Action.new(object["action"]) if object["action"]
+        @actionType = object["actionType"]
+        @actionSourceId = object["actionSourceId"]
 
         @attachments = []
         if object["attachments"]
@@ -203,14 +205,6 @@ module HelpScout
       # Returns a String suitable for display
       def to_s
         "#{@customer}: #{@body}"
-      end
-
-      def actionType
-        action.try(:type)
-      end
-
-      def actionSourceId
-        action.try(:associatedEntities).try(:values).try(:first)
       end
     end
 
