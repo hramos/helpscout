@@ -214,7 +214,10 @@ module HelpScout
 
       url = "/conversations/#{conversation.id}"
 
-      Client.change_item(@auth, url, conversation.to_change_json)
+      conversation.change_array.each do |operation|
+        Client.change_item(@auth, url, operation.to_json)
+      end
+      Client.update_item(@auth, "#{url}/tags", { tags: conversation.tags }.to_json)
     end
 
     def create_conversation_thread(conversationId, thread)

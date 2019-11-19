@@ -159,8 +159,12 @@ module HelpScout
       assignee
     end
 
-    def to_change_json
-      { "op": "replace", "path": "/status", "value": status }.to_json
+    def change_array
+      [
+        { "op": "replace", "path": "/status", "value": status },
+        { "op": "replace", "path": "/assignTo", "value": assignTo },
+        { "op": "replace", "path": "/subject", "value": subject }
+      ]
     end
 
     def to_s
