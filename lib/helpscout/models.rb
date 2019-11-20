@@ -173,7 +173,7 @@ module HelpScout
     end
 
     class Thread
-      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :type, :state, :customer, :text, :to, :cc, :bcc, :attachments, :openedAt, :body, :source, :actionType, :actionSourceId
+      attr_reader :id, :assignedTo, :status, :createdAt, :createdBy, :type, :state, :customer, :text, :to, :cc, :bcc, :attachments, :openedAt, :body, :source, :actionType, :actionSourceId, :user
 
       def initialize(object)
         @createdAt = DateTime.iso8601(object["createdAt"]) if object["createdAt"]
@@ -193,6 +193,7 @@ module HelpScout
         @source = Source.new(object["source"]) if object["source"]
         @actionType = object["actionType"]
         @actionSourceId = object["actionSourceId"]
+        @user = createdBy.try(:id)
 
         @attachments = []
         if object["attachments"]
