@@ -221,7 +221,10 @@ module HelpScout
     end
 
     def create_conversation_thread(conversationId, thread)
-      url = "/conversations/#{conversationId}/#{thread.type}s"
+      type = thread.type
+      type += 's' if ['chat', 'note'].include?(type)
+
+      url = "/conversations/#{conversationId}/#{type}"
 
       Client.create_item(@auth, url, thread.to_json)
     end
