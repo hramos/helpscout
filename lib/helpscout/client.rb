@@ -294,6 +294,14 @@ module HelpScout
 
       url = "/customers/#{customer.id}"
 
+      customer.phones.each do |phone|
+        Client.create_item(@auth, "#{url}/phones", { type: phone.type, value: phone.value }.to_json)
+      end
+
+      customer.websites.each do |website|
+        Client.create_item(@auth, "#{url}/websites", { value: website.value }.to_json)
+      end
+
       Client.update_item(@auth, url, customer.to_json)
     end
 
