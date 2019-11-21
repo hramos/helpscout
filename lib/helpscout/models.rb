@@ -162,10 +162,10 @@ module HelpScout
 
     def change_array
       [
-        { "op": "replace", "path": "/status", "value": status },
-        { "op": "replace", "path": "/assignTo", "value": assignTo },
-        { "op": "replace", "path": "/subject", "value": subject }
-      ].select { |e| e['value'].present? }
+        { op: "replace", path: "/status", value: status },
+        { op: "replace", path: "/assignTo", value: assignTo },
+        { op: "replace", path: "/subject", value: subject }
+      ].select { |e| e[:value].present? }
     end
 
     def to_s
