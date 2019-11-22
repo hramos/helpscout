@@ -229,6 +229,20 @@ module HelpScout
       Client.create_item(@auth, url, thread.to_json)
     end
 
+    def assign_conversation(conversationId, id)
+      raise StandardError.new("Missing Conversation") if conversationId.blank?
+
+      url = "/conversations/#{conversationId}"
+      Client.change_item(@auth, url, { op: "replace", path: "/assignTo", value: id }.to_json)
+    end
+
+    def unassign_conversation(conversationId)
+      raise StandardError.new("Missing Conversation") if conversationId.blank?
+
+      url = "/conversations/#{conversationId}"
+      Client.change_item(@auth, url, { op: "remove", path: "/assignTo" }.to_json)
+    end
+
     CONVERSATION_FILTER_STATUS_ACTIVE = "active"
     CONVERSATION_FILTER_STATUS_ALL = "all"
     CONVERSATION_FILTER_STATUS_PENDING = "pending"
