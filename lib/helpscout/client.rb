@@ -37,15 +37,8 @@ module HelpScout
           if envelope.item
             item = envelope.item
           end
-        elsif 400 <= response.code && response.code < 500
-          if response["message"]
-            envelope = ErrorEnvelope.new(response)
-            raise StandardError, envelope.message
-          else
-            raise StandardError, response["error"]
-          end
         else
-          raise StandardError, "Server Response: #{response.code}"
+          raise StandardError, "Response Code: #{response.code}; Server Response: #{response}"
         end
 
         item
@@ -77,15 +70,8 @@ module HelpScout
               items << item
             end
           end
-        elsif 400 <= response.code && response.code < 500
-          if response["message"]
-            envelope = ErrorEnvelope.new(response)
-            raise StandardError, envelope.message
-          else
-            raise StandardError, response["error"]
-          end
         else
-          raise StandardError, "Server Response: #{response.code}"
+          raise StandardError, "Response Code: #{response.code}; Server Response: #{response}"
         end
 
         items
@@ -107,7 +93,7 @@ module HelpScout
             response.headers["location"]
           end
         else
-          raise StandardError.new("Server Response: #{response.code} #{response['message']}")
+          raise StandardError, "Response Code: #{response.code}; Server Response: #{response}"
         end
       end
 
@@ -123,7 +109,7 @@ module HelpScout
         if response.code == 204
           true
         else
-          raise StandardError.new("Server Response: #{response.code} #{response['message']}")
+          raise StandardError, "Response Code: #{response.code}; Server Response: #{response}"
         end
       end
 
@@ -139,7 +125,7 @@ module HelpScout
         if response.code == 204
           true
         else
-          raise StandardError.new("Server Response: #{response.code} #{response['message']}")
+          raise StandardError, "Response Code: #{response.code}; Server Response: #{response}"
         end
       end
 
@@ -162,7 +148,7 @@ module HelpScout
         if response.code == 200
           AuthToken.new(response)
         else
-          raise StandardError.new("Server Response: #{response.code} #{response.message}")
+          raise StandardError, "Response Code: #{response.code}; Server Response: #{response}"
         end
       end
 
