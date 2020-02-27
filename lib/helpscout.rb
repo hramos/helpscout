@@ -1,6 +1,4 @@
 require 'helpscout/client.rb'
 require 'helpscout/models.rb'
 
-module HelpScout
-
-end
+module HelpScout; end
