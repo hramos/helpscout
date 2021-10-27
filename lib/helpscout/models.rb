@@ -148,7 +148,11 @@ module HelpScout
       @number = object["number"]
       @owner = Person.new(object["owner"]) if object["owner"]
       @closedAt = DateTime.iso8601(object["closedAt"]) if object["closedAt"]
-      @closedBy = Person.new(object["closedBy"]) if object["closedBy"]
+      @closedBy = if object["closedBy"].is_a?(Integer)
+                    Person.new("id" => object["closedBy"], "type" => "user")
+                  elsif object["closedBy"].try(:[], "id").present?
+                    Person.new(object["closedBy"])
+                  end
 
       @threads = []
       if object["_embedded"] && object["_embedded"]["threads"]
