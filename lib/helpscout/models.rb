@@ -117,7 +117,7 @@ module HelpScout
   end
 
   class Conversation
-    attr_reader :id, :bcc, :cc, :folderId, :type, :tags, :subject, :mailboxId, :customer, :status, :assignTo, :assignee, :modifiedAt, :preview, :threads, :source, :number
+    attr_reader :id, :bcc, :cc, :folderId, :type, :tags, :subject, :mailboxId, :customer, :status, :assignTo, :assignee, :modifiedAt, :preview, :threads, :source, :number, :closedAt, :closedBy
 
     def initialize(object)
       @id = object["id"]
@@ -147,6 +147,8 @@ module HelpScout
       @source = Source.new(object["source"]) if object["source"]
       @number = object["number"]
       @owner = Person.new(object["owner"]) if object["owner"]
+      @closedAt = DateTime.iso8601(object["closedAt"]) if object["closedAt"]
+      @closedBy = Person.new(object["closedBy"]) if object["closedBy"]
 
       @threads = []
       if object["_embedded"] && object["_embedded"]["threads"]
