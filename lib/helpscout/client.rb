@@ -280,6 +280,16 @@ module HelpScout
       customer
     end
 
+    def customer_by_email(email)
+      url = "/customers"
+      options = { query: "(email:\"#{email}\")" }
+
+      items = Client.request_items(@auth, url, options)
+      return if items.empty?
+
+      Customer.new(items.first)
+    end
+
     def create_customer(customer)
       if !customer
         raise StandardError.new("Missing Customer")
